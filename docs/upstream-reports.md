@@ -1,32 +1,52 @@
-# Seven reports for upstream
+# Seven bug reports for the Health-GPS maintainers
 
-Seven findings belong to whoever owns the baseline and the example data rather than to this
-repository. Five of them this build cannot fix without inventing a number or a mechanism for
-someone else's fitted model; the last two it *has* fixed, and they are here as well because the
-fix is a guard rather than a modelling change and the defect is still upstream. They are written
-as separate reports, each with the one command that reproduces it and the evidence behind it, so
-that filing them is a copy rather than a rewrite. *Report seven things upstream* in
-[docs/backlog.md](backlog.md) is the item this file closes the *writing* half of; the other
-half is somebody sending them.
+Seven findings belong to whoever owns the Health-GPS baseline and the example data packs rather
+than to this repository. Each one is written in the same shape: what it is, which files it is in,
+the command that reproduces it, what happens, what should happen instead, a suggested fix, and the
+evidence behind it.
 
-Everything here was measured against Health-GPS `3.0.0.0` built as
-[docs/build-notes.md](build-notes.md) records, on macOS 26.6.2 / Apple clang 21, with the
-`imperialCHEPI/healthgps-examples` pack beside it. Nothing here depends on this implementation
-being right about anything: each report reproduces with your binary and your data.
+Everything here was measured against Health-GPS `3.0.0.0`, built as
+[docs/build-notes.md](build-notes.md) records, on macOS 26.6.2 with Apple clang 21, against the
+`imperialCHEPI/healthgps-examples` pack. No report depends on this repository's implementation
+being correct: every one reproduces with your binary and your data.
+
+| | Report | Needs |
+|---:|---|---|
+| 1 | `KevinHall_India` and `KevinHall_PIF` stop in their first simulated year | a decision about a fitted model |
+| 2 | An intervention on the Kevin Hall and static-linear surfaces is inert | a decision about a fitted model |
+| 3 | `KevinHall_FINCH`'s legacy `static_model.json` names two files the pack lacks | a decision, or a deletion |
+| 4 | The baseline exits on a signal on about one `KevinHall_FINCH` run in 250 | a concurrency fix |
+| 5 | Four demographic standard deviations have their square root taken twice | a code fix, and a decision about published numbers |
+| 6 | The energy balance admits a body fat mass below zero and then overflows | a code fix |
+| 7 | A `NaN` risk factor is counted as zero in the year's mean | a code fix |
+
+Reports 6 and 7 are the two this build has already guarded against. Both are still upstream
+defects, because a guard added in a reimplementation does nothing for anybody running yours.
 
 ---
 
-## 1. `KevinHall_India` and `KevinHall_PIF` cannot be run by their own baseline
+## 1. `KevinHall_India` and `KevinHall_PIF` stop in their first simulated year
 
-**What happens.** Both examples stop in the first simulated year, in every run, with a weight below
-the configured lower bound. Your binary dies on an uncaught exception; ours reports it as a located
-error and stops. It is the same defect in the same place in both.
+**Summary.** Both examples give a newborn a weight below the lower bound their own configuration
+sets, so neither example can complete a run in any implementation.
 
-**Why.** Both configs put `modelling.risk_factors.Weight.range[0]` at **3.319358 kg**. Both give a
-newborn a weight by multiplying an expected birth weight by a quantile drawn from
-`weight_quantiles_NCDRisk_{male,female}.csv` — 9,995 multipliers each, 0.668034 to 1.916892 for
-males and 0.655385 to 1.902204 for females — and the Kevin Hall model then validates that weight
-against the configured range. The product is below the bound for ordinary draws, not tail ones:
+**Affected.**
+
+- `KevinHall_India/new_config.json` and `KevinHall_PIF/new_config.json`, at
+  `modelling.risk_factors.Weight.range[0]` = **3.319358** kg.
+- `KevinHall_India/weight_quantiles_NCDRisk_male.csv` and `..._female.csv`, and the identical pair
+  in `KevinHall_PIF/`.
+- The check that stops the run: `KevinHallModel::validate_weight_in_config_range`,
+  `kevin_hall_model.cpp:1191-1193`.
+
+**Reproduce.**
+
+```bash
+HealthGPS.Console -f KevinHall_India/new_config.json
+```
+
+**What happens.** The run stops in the first simulated year, on every seed. Your binary dies on an
+uncaught exception. This build reports a located error and stops.
 
 | Example | Implementation | Who failed | Weight | Floor |
 |---|---|---|---:|---:|
@@ -35,117 +55,180 @@ against the configured range. The product is below the bound for ordinary draws,
 | `KevinHall_PIF` | baseline | (not named) | 3.1084 kg | 3.319358 kg |
 | `KevinHall_PIF` | this build | person 5, male, age 0 | 2.544 kg | 3.319358 kg |
 
-The person named is the first or fifth of the cohort, so no seed, cohort size or horizon avoids it.
+**What should happen.** Both examples run to their horizon. A pack should not ship a weight bound
+and a birth-weight curve that contradict each other.
 
-**The two examples are one defect, not two.** `India.DataFile.csv` and both weight-quantile files are
-byte-for-byte identical between the two directories.
+**Suggested fix.** Either the bound or the curve is wrong, and only you can say which. A 2.5 kg
+newborn is an ordinary low-birthweight baby, which suggests the configured 3.32 kg is a mean rather
+than a minimum; the same configured range has 92.56 kg at the top, which is not a maximum either.
+Changing either number here would mean inventing a number for a fitted model.
 
-**Reproduce:**
-
-```bash
-HealthGPS.Console -f KevinHall_India/new_config.json
-```
-
-**What we would like to know.** Either the bound or the curve is wrong, and only you can say which.
-A 2.5 kg newborn is an ordinary low-birthweight baby, so a floor of 3.32 kg looks like the bound
-being a mean rather than a minimum; but the same configured range has 92.56 kg at the top, which is
-not a maximum either. Changing either here would be inventing a number for a fitted model.
-
-**What it blocks.** Two of your six examples, the whole Kevin Hall + India data family, and the only
-population-impact-fraction comparison there could be — `KevinHall_PIF` loads completely in this
-build, all 69 fraction tables and both scenarios, and then stops on this.
-
-**A second, smaller thing in the same config.** `KevinHall_India/new_config.json` carries both a
+A second, smaller problem is in the same file. `KevinHall_India/new_config.json` carries both a
 deprecated root `trend_type` of `"UPFTrend"` and a `project_requirements.trend.type` of
-`"income_trend"`. Your own loader refuses a config that has both: *"Deprecated root-level trend_type
-and/or income_categories are not allowed when project_requirements is present"*. So the file
-contradicts itself and is unloadable by the validator that ships with it.
+`"income_trend"`. Your own loader refuses that combination: *"Deprecated root-level trend_type
+and/or income_categories are not allowed when project_requirements is present"*. The file is
+therefore unloadable by the validator shipped beside it.
+
+**Evidence.** A newborn's weight is an expected birth weight multiplied by a quantile drawn from
+the shipped curve: 9,995 multipliers per file, spanning 0.668034 to 1.916892 for males and 0.655385
+to 1.902204 for females. The product falls below the bound on ordinary draws rather than tail ones,
+and the failing person is the first or the fifth of the cohort, so no seed, cohort size or horizon
+avoids it.
+
+The two failures are one defect rather than two: `India.DataFile.csv` and both weight-quantile
+files are byte-for-byte identical between the two example directories.
+
+This blocks two of your six examples, the whole Kevin Hall and India data family, and the only
+population-impact-fraction comparison there could be. `KevinHall_PIF` loads completely in this
+build, all 69 fraction tables and both scenarios, and then stops on this.
 
 ---
 
-## 2. An intervention scenario is inert on the Kevin Hall / static-linear surface
+## 2. An intervention on the Kevin Hall and static-linear surfaces is inert
 
-**What happens.** A configuration that selects an intervention on that model surface runs to
-completion, reports success, and produces output **byte-identical** to the same run with a no-op
-policy. Nothing warns.
+**Summary.** A configuration that selects an intervention on those model surfaces runs to
+completion, reports success, and produces output byte-identical to a run with no policy at all.
 
-**Why.** `Scenario::apply` has exactly one call site in the whole tree — in the dynamic hierarchical
-linear model. Neither `static_linear_model.cpp` nor `kevin_hall_model.cpp` calls it, so the policy
-is never applied to anything on that surface.
+**Affected.** `Scenario::apply` has exactly one call site in the whole tree,
+`dynamic_hierarchical_linear_model.cpp:110`. Neither `static_linear_model.cpp` nor
+`kevin_hall_model.cpp` calls it.
 
-**Reproduce**, with any two of the six policy types the example defines:
+**Reproduce.** With any two of the six intervention types the example defines:
 
 ```bash
-# edit KevinHall_FINCH/new_config.json: interventions.active_type_id = "simple", run; then
-# set it to "marketing" and run again with the same seed
-diff <result of run 1> <result of run 2>       # identical
+# in KevinHall_FINCH/new_config.json, set interventions.active_type_id = "simple", then run:
+HealthGPS.Console -f KevinHall_FINCH/new_config.json
+# set it to "marketing", run again with the same seed, and compare the two result files
 ```
 
-We did this for all six intervention types on that surface: six runs, one pair of futures, identical
-files.
+**What happens.** The two result files are identical. Nothing in the output, the log or the exit
+code says the policy was never applied.
 
-**What we would like to know.** Is a policy *meant* to apply on that surface? This build refuses such
-a configuration at load time — naming the intervention, how many impacts it declares and the dynamic
-model file — because the alternative is to run it silently and hand back a result that looks like a
-policy evaluation and is not. That is the right behaviour only if the inertness is a defect. If a
-policy is meant to apply, **where** it applies changes the answer: before the energy balance runs,
-after it, or to the intake targets. That is a modelling decision with a fitted model behind it.
+**What should happen.** Either the policy applies to the selected surface, or the configuration is
+refused at load time.
 
-**What it blocks.** Four of your six examples can only be compared with a no-op policy active.
+**Suggested fix.** The fix depends on an answer only you have: is a policy *meant* to apply on that
+surface? If it is, then **where** it applies changes the result — before the energy balance runs,
+after it, or to the intake targets — and that is a modelling decision with a fitted model behind
+it. If the inertness is a defect, the configuration should be refused rather than run. This build
+refuses it, naming the intervention, the number of impacts it declares and the dynamic model file.
+
+**Evidence.** All six intervention types were run on that surface: six runs, one pair of futures,
+identical files. The single call site is greppable in both trees. This blocks the comparison of
+four of your six examples with any policy other than a no-op.
 
 ---
 
 ## 3. `KevinHall_FINCH`'s legacy `static_model.json` names two files the pack does not contain
 
-**What happens.** The legacy configuration for that example refers to two data files that are not in
-the example directory, so the legacy path cannot be loaded as shipped.
+**Summary.** The legacy configuration for that example refers to two data files that are not in the
+example directory, so the legacy path cannot be loaded as shipped.
 
-**What we did.** This build reads the example's modern `new_config.json` instead, which is the file
-that carries `project_requirements`, and records the choice as a scope decision rather than a
-workaround ([ADR 0030](decisions/0030-policy-scenario-selection-for-the-broken-finch-example.md)).
-The audit records the missing files as finding D-02.
+**Affected.** `KevinHall_FINCH/static_model.json`, which names
+`Finch_residual_policy_covariance.csv` and `policyeffect_model.csv`. The pack ships seven
+scenario-prefixed variants of each instead, `S1_` through `S7_`.
 
-**What we would like to know.** Whether the legacy file is meant to still work, or whether it is
-superseded and could be removed — the second answer is a perfectly good one, and it saves the next
-reader the hour we spent.
+**Reproduce.**
+
+```bash
+HealthGPS.Console -f KevinHall_FINCH/config.json
+```
+
+**What happens.** The load fails: *"Could not find file …/KevinHall_FINCH/
+Finch_residual_policy_covariance.csv"*, followed by *"Failed with message: Could not load input
+file info."*
+
+**What should happen.** The legacy configuration loads, or the pack no longer ships it.
+
+**Suggested fix.** Point `static_model.json` at one of the seven scenario variants, or delete the
+file as superseded by `new_static_model.json`, which names the `S1_` pair. Either answer is
+useful; the second saves the next reader the hour this one cost.
+
+**Evidence.** Recorded as audit finding D-02 in
+[docs/audit/02-data-and-examples.md](audit/02-data-and-examples.md). The missing files are part of
+the example rather than of the pinned data release. This build reads the example's modern
+`new_config.json` instead and records that as a scope decision
+([ADR 0030](decisions/0030-policy-scenario-selection-for-the-broken-finch-example.md)).
 
 ---
 
-## 4. The baseline exits on a signal about one `KevinHall_FINCH` run in forty-five
+## 4. The baseline exits on a signal on about one `KevinHall_FINCH` run in 250
 
-**What happens.** Of **180** baseline runs of `KevinHall_FINCH` made for this project's equivalence
-comparison, **4 exited on a signal** — three `SIGTRAP`, one `SIGABRT` — and every one of them
-succeeded when re-run with the same binary, config and seed. `HLM_France` ran 80 times over the same
-comparisons without a single failure, so it is the FINCH surface that provokes it.
+**Summary.** A small fraction of `KevinHall_FINCH` runs die on `SIGTRAP` or `SIGABRT`, and every
+one of them succeeds when re-run with the same binary, configuration and seed.
 
-**Why we think it happens.** Two scenario threads run concurrently, and the disease repository is
-populated lazily from inside a parallel loop behind a lock-free fast path that races a concurrent
-insert. Those are audit findings B-01 and B-02; this is them showing up as a crash rather than as a
-reordering of the output.
+**Affected.** `repository.cpp:56-58` against `:63` and `:134` — a lock-free read path on
+`std::map diseases_` racing a concurrent locked insert, reached from `disease.cpp:79`. Audit
+findings B-01 and B-02, in [docs/audit/04-baseline-issues.md](audit/04-baseline-issues.md).
 
-**Reproduce.** Run the example in a loop and count; it is about one in forty-five, so forty-five
-runs is roughly an hour:
+**Reproduce.** Run the example in a loop and count. At about one failure in 250, sixty runs is
+roughly an hour and may show none:
 
 ```bash
 for i in $(seq 1 60); do HealthGPS.Console -f KevinHall_FINCH/new_config.json || echo "FAILED $i"; done
 ```
 
-**What we do about it.** The comparison harness retries a baseline run up to three times, counts the
-retries and prints every one, so the flake is visible in the record rather than smoothed away
-([docs/equivalence.md](equivalence.md), *The baseline does not always finish*). Across the same
-runs this build has not exited on a signal once, which is what the sequential-scenario design buys
-([ADR 0009](decisions/0009-sequential-scenarios-and-the-migration-journal.md)).
+**What happens.** The process exits on a signal, having written nothing usable. A re-run of the
+same seed succeeds.
+
+**What should happen.** A run either completes or fails deterministically.
+
+**Suggested fix.** Take the lock on the read path, or populate the disease repository before the
+parallel section rather than lazily from inside it.
+
+**Evidence.** Two measurements, and the larger is the better one. Of **500** single-threaded
+`KevinHall_FINCH` runs, **2 exited on a signal** and both succeeded on the retry. An earlier
+measurement of **180** runs made for this project's equivalence comparison saw **4** — three
+`SIGTRAP`, one `SIGABRT` — which is the one in forty-five quoted in earlier versions of this
+report. `HLM_France` ran 80 times over the same comparisons without a single failure, so the FINCH
+surface is what provokes it. ThreadSanitizer names the race directly: locked write at
+`repository.cpp:134` against unlocked read at `repository.cpp:57`, same address, both via
+`disease.cpp:79`.
+
+This build has not exited on a signal once across the same runs, which is what running the two
+scenarios sequentially buys
+([ADR 0009](decisions/0009-sequential-scenarios-and-the-migration-journal.md)). The comparison
+harness retries a baseline run up to three times and prints every retry, so the flake stays visible
+in the record.
 
 ---
 
-## 5. Every demographic standard deviation that is also a declared risk factor has its square root taken twice
+## 5. Four demographic standard deviations have their square root taken twice
 
-**What happens.** In `KevinHall_FINCH`'s result file, `std_region` is **0.122097** in a band of 50
-people whose `mean_region` is 1.38. Region takes the values 1 to 4, so the spread of that band is
-about 0.745 — and 0.122097 is `sqrt(0.745 / 50)`. The square root has been taken twice.
+**Summary.** A channel that is both a demographic channel and a declared risk factor is finished by
+two loops, so its standard deviation is the square root of a number that is already a standard
+deviation.
 
-**Why.** `AnalysisModule::calculate_standard_deviation` finishes the accumulated squared deviations
-in two loops, and a name can be in both. The first walks every mapping entry:
+**Affected.** `AnalysisModule::calculate_standard_deviation` in `analysis_module.cpp`, and the same
+shape in `AnalysisModule::calculate_income_based_standard_deviation`,
+`analysis_module.cpp:1735-1800`.
+
+**Reproduce.** Run the example and read the band with the most people in it. `std_region` should be
+the spread of a 1-to-4 category over that band, and is the square root of that spread over the head
+count instead:
+
+```bash
+HealthGPS.Console -f KevinHall_FINCH/new_config.json -T 1
+```
+
+**What happens.** In a `KevinHall_FINCH` result file, `std_region` is **0.122097** in a band of 50
+people whose `mean_region` is 1.38. Region takes the values 1 to 4, so that band's spread is about
+0.745, and `sqrt(0.745 / 50)` is 0.122097.
+
+**What should happen.** Each channel's accumulated squared deviations are finished exactly once.
+
+**Suggested fix.** Finish each channel once: either drop the explicit demographic list where the
+name is already in the mapping, or mark a channel as finished when `divide_by_count_sqrt` writes it
+back.
+
+**Evidence.** `divide_by_count_sqrt` lower-cases the name and writes back in place:
+
+```cpp
+const double sum = series.at(sex, std_channel).at(age);
+series.at(sex, std_channel).at(age) = std::sqrt(sum / count);
+```
+
+The first loop walks every mapping entry:
 
 ```cpp
 for (const auto &factor : context.mapping().entries()) {
@@ -154,72 +237,42 @@ for (const auto &factor : context.mapping().entries()) {
 }
 ```
 
-and the second is an explicit list of the demographic channels — `age`, `age2`, `age3`, `gender`,
-`region`, `ethnicity`, `sector`, `income`, `income_category`, `physical_activity`.
-`divide_by_count_sqrt` lower-cases the name and writes back in place:
+The second is an explicit list of demographic channels: `age`, `age2`, `age3`, `gender`, `region`,
+`ethnicity`, `sector`, `income`, `income_category`, `physical_activity`. A channel reached by both
+gets `sqrt(sqrt(sum_of_squares / n) / n)`.
 
-```cpp
-const double sum = series.at(sex, std_channel).at(age);
-series.at(sex, std_channel).at(age) = std::sqrt(sum / count);
-```
+`KevinHall_FINCH` declares `Region`, `Ethnicity`, `Income`, `income_category`, `Age`, `Age2`,
+`Age3` and `Gender` as level-0 risk factors, so all eight are in both lists. Four of the eight are
+zero either way: `mean_age` is the band's own age and `mean_gender` the file's own sex, so those
+deviations are zero before anything is square-rooted, and `income_category` is constant within a
+stratum file. The four that carry a number are `std_region`, `std_ethnicity`, `std_income` and,
+where a pack assigns it, `std_sector`. `std_bmi` is in the mapping only, is finished once, and is
+correct. No mean is affected and no other column is.
 
-so a channel reached by both loops gets `sqrt(sqrt(sum_of_squares/n)/n)`. `KevinHall_FINCH`
-declares `Region`, `Ethnicity`, `Income`, `income_category`, `Age`, `Age2`, `Age3` and `Gender` as
-level-0 risk factors, so all eight are in both lists. `std_bmi` is in the mapping only, is finished
-once, and is right.
-
-**It is in the income-stratified files too**, through the same shape in
-`calculate_income_based_standard_deviation` (`analysis_module.cpp:1735-1800`).
-
-**What it does and does not affect.** Four of the eight are zero either way — `mean_age` is set to
-the band's own age and `mean_gender` to the file's own sex, so their deviations are zero before
-anything is square-rooted, and `income_category` is constant within a stratum file. The ones that
-carry a number are `std_region`, `std_ethnicity`, `std_income` and, where a pack assigns it,
-`std_sector`. No mean is affected and no other column is.
-
-**Reproduce.** Run the example and look at the band with the most people in it: `std_region` should
-be the spread of a 1-to-4 category over that band, and is its square root over the head count
-instead.
-
-```bash
-HealthGPS.Console -f KevinHall_FINCH/new_config.json -T 1
-```
-
-**What we do about it.** This build **reproduces it**, in the whole-population series and in the
-income-stratified one, and does not fix it. The equivalence harness compares these files column for
-column, so a quiet correction here would be a difference nobody chose; and a standard deviation is
-a number somebody may have published, so changing it is a decision that belongs with the model
-rather than with a reimplementation. `AnalysisIncomeSeries.ADemographicThatIsAlsoADeclaredFactorHasItsSquareRootTakenTwice`
-pins the reproduced behaviour by name and says why.
+This build **reproduces** the behaviour rather than correcting it, in the whole-population series
+and in the income-stratified one, because a standard deviation is a number somebody may have
+published and the correction is a decision for the model's owners.
+`AnalysisIncomeSeries.ADemographicThatIsAlsoADeclaredFactorHasItsSquareRootTakenTwice` pins the
+reproduced behaviour by name.
 
 ---
 
-## 6. The energy balance admits a body fat mass below zero, and one year later the weight overflows
+## 6. The energy balance admits a body fat mass below zero, and a year later the weight overflows
 
-**What happens.** `KevinHallModel::kevin_hall_run` integrates body fat straight through zero. Once
-it is below **−2.001 kg** the model's own partition coefficient is past a pole, and the next year's
-weight is a number like **−1.7×10²⁸³ kg**.
+**Summary.** `KevinHallModel::kevin_hall_run` integrates body fat straight through zero; past
+−2.001 kg the model's own partition coefficient is beyond a pole, and the next year's weight is a
+number like −1.7×10²⁸³ kg.
 
-**Why.** The yearly step is the closed-form solution of a two-compartment relaxation, and one of
-that relaxation's own coefficients is
+**Affected.**
 
-```
-p = C / (C + F),     C = 10.4 * rho_L / rho_F = 2.001012658227848 kg
-```
+- `KevinHallModel::kevin_hall_run`, the yearly step, in `kevin_hall_model.cpp`.
+- `initialise_kevin_hall_state`, `kevin_hall_model.cpp:920`, which floors a negative body fat
+  estimate at `F = 0.2 * BW` and is the only place that floor is applied.
+- `validate_weight_in_config_range`, `kevin_hall_model.cpp:1191-1193`.
 
-which is undefined at `F = −C`. Past it, `p` is negative, `a1*b2 − a2*b1` is negative, `tau` is
-negative, and `exp(-365.0 / tau)` is an exponential *away* from the steady state. At a `tau` of
-−0.559 days that is 652 e-foldings in one call.
-
-`initialise_kevin_hall_state` already floors a negative body fat estimate at `F = 0.2 * BW`
-(`kevin_hall_model.cpp:920`), and the reason is the same one: a non-positive fat mass makes the
-partition coefficient meaningless. **That floor is never applied to the yearly update**, which is
-the only place integration can take `F` there.
-
-**Reproduce.** It is about one seed in five hundred of `KevinHall_FINCH`, and your binary's
-cohorts are not ours, so the honest reproduction is the arithmetic rather than a seed. Feed
-`kevin_hall_run`'s own statements the state below — one real person, traced out of a real run —
-and it returns `BW = -1.7019180456941172e+283`:
+**Reproduce.** The rate is about one seed in five hundred of `KevinHall_FINCH`, and your binary's
+cohorts are not this build's, so the reproduction is the arithmetic rather than a seed. Feed
+`kevin_hall_run`'s own statements this state, taken from one real person in one real run:
 
 ```
 age 24, male, BW_0 55.848205648994693, H 171.67238876297318, PAL 1.7771963443015526,
@@ -228,34 +281,56 @@ G_0 0.92450226451031092, Na_0 4.505747672185052, Na 4.4136891989841027,
 ECF_0 17.202140148866199, F_0 -2.2324094172489493, L_0 37.457816538689301, K -3048.8515237582928
 ```
 
-The year before it, the same person's step returns `F = -2.2240198893612395` from a perfectly
-ordinary `F_0` of 5.86 kg — a 30% fall in energy intake and a rise in physical activity in the
-same year, both of which the fitted models draw.
+**What happens.** The call returns `BW = -1.7019180456941172e+283`. The yearly step is the
+closed-form solution of a two-compartment relaxation, one of whose coefficients is
 
-**How bad is it in practice.** In **500 seeds** of `KevinHall_FINCH` we saw it once. The reason it
-is worth a report anyway is the sign: `validate_weight_in_config_range` **throws** below the
-configured minimum but only **prints a warning and returns** above the maximum
-(`kevin_hall_model.cpp:1191-1193`). A runaway that goes up rather than down therefore leaves your
-binary exiting **zero**, with an impossible number in the results file. We confirmed the warning
-path exits zero directly, by running `KevinHall_FINCH` with `Weight.range` set to `[1, 50]`:
-**67,668 `[WEIGHT RANGE WARNING]` lines and exit code 0**, results written.
+```
+p = C / (C + F),     C = 10.4 * rho_L / rho_F = 2.001012658227848 kg
+```
 
-**What we do about it.** We integrate the year only as far as the model is defined — to the
-instant body fat reaches zero, which is `exp(-t*/tau) = F* / (F* - F0)`, with lean tissue taken to
-the same instant — and we record every occurrence as a located warning in the run's manifest. On
-the same 500 seeds the guard changes **nothing**: 499 of them are byte-identical with it on and
-off, and the five-hundredth is the difference between a results file and no results file.
-[docs/findings/seed-80.md](findings/seed-80.md) is the whole trace;
-[ADR 0049](decisions/0049-the-energy-balance-is-integrated-only-where-it-is-defined.md) is why
-that particular bound and not another.
+which is undefined at `F = −C`. Past that point `p` is negative, `a1*b2 − a2*b1` is negative, `tau`
+is negative, and `exp(-365.0 / tau)` is an exponential away from the steady state. At a `tau` of
+−0.559 days that is 652 e-foldings in one call.
+
+**What should happen.** The model is evaluated only where it is defined. A body fat mass that has
+reached zero does not continue downwards into a region where the model's own coefficient has
+changed sign.
+
+**Suggested fix.** Apply the floor that `initialise_kevin_hall_state` already applies at
+`kevin_hall_model.cpp:920`, for the same stated reason, to the yearly update as well. This build
+instead integrates the year only as far as the model is defined, to the instant body fat reaches
+zero, which is `exp(-t*/tau) = F* / (F* - F0)`, with lean tissue taken to the same instant
+([ADR 0049](decisions/0049-the-energy-balance-is-integrated-only-where-it-is-defined.md)).
+
+**Evidence.** On seed 80 of `KevinHall_FINCH`, the year before the overflow, the same person's step
+returns `F = -2.2240198893612395` from an ordinary `F_0` of 5.86 kg, after a 30% fall in energy
+intake and a rise in physical activity in the same year, both of which the fitted models draw. The
+whole trace is [docs/findings/seed-80.md](findings/seed-80.md).
+
+In **500 seeds** of `KevinHall_FINCH`, body fat went below zero four times and the weight overflowed
+once. The sign of the runaway is what makes it worth reporting at that rate:
+`validate_weight_in_config_range` **throws** below the configured minimum, and **prints a warning
+and returns** above the maximum. A runaway upward therefore leaves your binary exiting **zero**,
+with an impossible number in the results file. That was confirmed directly by running
+`KevinHall_FINCH` with `Weight.range` set to `[1, 50]`: **67,668 `[WEIGHT RANGE WARNING]` lines,
+exit code 0**, results written.
+
+This build's guard changes nothing over the same 500 seeds: 499 are byte-identical with it on and
+off, and the five-hundredth is the difference between a results file and no results file. Every
+occurrence is recorded as a located warning in the run's manifest.
 
 ---
 
-## 7. A risk factor that is not a number becomes a zero in the reported mean, silently
+## 7. A `NaN` risk factor is counted as zero in the year's mean
 
-**What happens.** `AnalysisModule::calculate_historical_statistics` accumulates each year's risk
-factor means over the population, and does this to every value on the way in
-(`analysis_module.cpp:385-391`):
+**Summary.** `AnalysisModule::calculate_historical_statistics` substitutes `0.0` for a `NaN` risk
+factor and divides by the whole head count, so the reported mean is wrong and nothing says so.
+
+**Affected.** `analysis_module.cpp:385-391`.
+
+**Reproduce.** Any model that can produce a `NaN` will do it; the shortest path is a risk factor
+whose `range` is absent and whose linear model produces `log(0)`. The eight lines are unambiguous
+and faster to read:
 
 ```cpp
 double factor_value = 0.0;
@@ -268,45 +343,35 @@ if (entity.risk_factors.contains(item.first)) {
 item.second[entity.gender] += factor_value;
 ```
 
-A `NaN` becomes a zero, it is added to the sum, and the sum is divided by the **whole** head
-count. So a cohort of three people weighing 80 kg, one of whom has a `NaN` weight, reports a mean
-weight of **53.3 kg**. Nothing in the output, the log or the exit code says a value was
-substituted.
+**What happens.** A `NaN` becomes a zero, is added to the sum, and the sum is divided by the whole
+head count. A cohort of three people weighing 80 kg, one of whom has a `NaN` weight, reports a mean
+weight of **53.3 kg**. Nothing in the output, the log or the exit code records the substitution.
+`std::isnan` is false for `±inf`, so an infinite risk factor is not examined at all and the band's
+mean becomes infinite, which at least is visible.
 
-**And an infinity is not looked at at all.** `std::isnan` is false for `±inf`, so an infinite risk
-factor goes into the sum and the whole band's mean becomes infinite — which at least is visible,
-unlike the NaN.
+**What should happen.** A value that cannot describe a person does not reach an output file. The
+run stops, or the value is excluded and the exclusion is reported.
 
-**Why it matters more than it looks.** This is the *last* place a value passes through before it
-becomes output, and it is the last place that still knows which person it belongs to. A guard here
-costs one `isfinite` on a value already in a register. A substitution here converts every upstream
-defect — including report 6 — from a run that fails loudly into a results file that is quietly
-wrong.
+**Suggested fix.** Delete the four lines that substitute zero, and test `std::isfinite` instead of
+`std::isnan`. The check costs one instruction on a value already in a register.
 
-**Reproduce.** Any model that can produce a `NaN` will do it; the shortest path is a risk factor
-whose `range` is absent and whose linear model produces `log(0)`. Reading the eight lines above is
-faster, and they are unambiguous.
+**Evidence.** This is the last code that sees a value together with the person it belongs to, so a
+substitution here turns a defect anywhere upstream of it — including report 6 — into a results file
+that is quietly wrong rather than a run that fails loudly.
 
-**What we do about it.** The run stops, with an error naming the person, the year, the factor and
-the value, and saying why the value cannot be carried. Values with a physical meaning are bounded
-as well as checked for finiteness — a weight must be between a gram and a tonne, energy intake
-must not be negative — and those bounds are deliberately far outside any configured modelling
-range, so crossing one is evidence of a defect rather than of an unusual draw. It is switchable
-(`--baseline-compat B-30`) so that the difference your behaviour makes can be measured rather than
-argued. [ADR 0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md).
+This build stops the run with an error naming the person, the year, the factor and the value.
+Values with a physical meaning are bounded as well as checked for finiteness: a weight must be
+between a gram and a tonne, and energy intake must not be negative. Those bounds sit far outside
+any configured modelling range, so crossing one is evidence of a defect rather than of an unusual
+draw. The behaviour is switchable with `--baseline-compat B-30`, so the difference it makes can be
+measured
+([ADR 0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md)).
 
 ---
 
-## What this file is not
+## Related records in this repository
 
-It is not a patch set. Three of the first five need a decision that belongs to whoever fitted the
-models or assembled the data packs, and the fourth is a concurrency defect in a design this
-implementation deliberately does not share, so a fix from here would be a rewrite rather than a
-patch. Reports 6 and 7 are the two this build *has* acted on, and they are here because a guard in
-a reimplementation does nothing for anybody running yours — the fix for both is a few lines in
-code we do not own.
-
-[docs/deviations.md](deviations.md) has the differences between the two implementations that this build has already fixed,
-each with its evidence and the test that pins it; those are recorded rather than reported because
-this build has already fixed them, and [ADR 0041](decisions/0041-deliberate-deviations-are-switchable.md)
-makes each one switchable so its effect can be measured.
+[docs/deviations.md](deviations.md) lists every behaviour where this build differs from yours
+deliberately, each with its evidence and the test that pins it. Each deviation that changes a
+number has a switch that restores your behaviour, so its effect can be measured
+([ADR 0041](decisions/0041-deliberate-deviations-are-switchable.md)).
