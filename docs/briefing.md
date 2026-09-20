@@ -68,7 +68,7 @@ libraries (`static_linear_model.cpp:1952`, **B-05**). A config with no seed draw
 `std::random_device` and records it as `0` (`mtrandom.cpp:8`, **B-06**).
 
 **The energy balance admits a body fat mass below zero, and a year later the weight overflows.** The
-partition coefficient `p = C / (C + F)` has a pole at `F = −2.001012658227848 kg`, and your code
+partition coefficient `p = C / (C + F)` is undefined at `F = −2.001012658227848 kg`, and your code
 floors a negative fat estimate at initialisation only (`kevin_hall_model.cpp:920`). On seed 80 of
 `KevinHall_FINCH`, body fat reaches −2.224 kg in 2030 and weight −1.7×10²⁸³ kg in 2031, a number
 your own statements reproduce. Body fat goes below zero on **four seeds in five hundred**, and on
@@ -99,8 +99,7 @@ can only be compared with no policy active.
 
 ## How to reproduce the comparison
 
-The comparison runs against checked-in reductions of your binary's output, so it needs no baseline
-binary:
+The comparison needs no binary of yours, because the reductions are checked in:
 
 ```bash
 tests/equivalence/run.py --example HLM_France --seeds 20 --use-reference

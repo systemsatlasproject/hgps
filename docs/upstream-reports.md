@@ -1,9 +1,10 @@
 # Seven bug reports for the Health-GPS maintainers
 
-Seven findings belong to whoever owns the Health-GPS baseline and the example data packs rather
-than to this repository. Each one is written in the same shape: what it is, which files it is in,
-the command that reproduces it, what happens, what should happen instead, a suggested fix, and the
-evidence behind it.
+Seven findings belong to whoever owns the Health-GPS code and the example data packs rather than to
+this repository. A `B-nn` or `D-nn` label below is the identifier an earlier audit of that code gave
+the defect ([docs/audit/](audit/)). Each one is written in the same shape: what it is, which files
+it is in, the command that reproduces it, what happens, what should happen instead, a suggested fix,
+and the evidence behind it.
 
 Everything here was measured against Health-GPS `3.0.0.0`, built as
 [docs/build-notes.md](build-notes.md) records, on macOS 26.6.2 with Apple clang 21, against the
@@ -46,7 +47,7 @@ HealthGPS.Console -f KevinHall_India/new_config.json
 ```
 
 **What happens.** The run stops in the first simulated year, on every seed. Your binary dies on an
-uncaught exception. This build reports a located error and stops.
+uncaught exception. This build stops with an error naming the person, the value and the bound.
 
 | Example | Implementation | Who failed | Weight | Floor |
 |---|---|---|---:|---:|
@@ -113,8 +114,9 @@ after it, or to the intake targets — and that is a modelling decision with a f
 it. If the inertness is a defect, the configuration should be refused rather than run. This build
 refuses it, naming the intervention, the number of impacts it declares and the dynamic model file.
 
-**Evidence.** All six intervention types were run on that surface: six runs, one pair of futures,
-identical files. The single call site is greppable in both trees. This blocks the comparison of
+**Evidence.** All six intervention types were run on that surface. In every pair, the baseline
+future and the intervention future wrote identical files. The single call site can be found by
+grep in both source trees. This blocks the comparison of
 four of your six examples with any policy other than a no-op.
 
 ---
@@ -157,9 +159,9 @@ the example rather than of the pinned data release. This build reads the example
 **Summary.** A small fraction of `KevinHall_FINCH` runs die on `SIGTRAP` or `SIGABRT`, and every
 one of them succeeds when re-run with the same binary, configuration and seed.
 
-**Affected.** `repository.cpp:56-58` against `:63` and `:134` — a lock-free read path on
-`std::map diseases_` racing a concurrent locked insert, reached from `disease.cpp:79`. Audit
-findings B-01 and B-02, in [docs/audit/04-baseline-issues.md](audit/04-baseline-issues.md).
+**Affected.** `repository.cpp:56-58` against `:63` and `:134`. A read path on `std::map diseases_`
+takes no lock, and races an insert on another thread that does, reached from `disease.cpp:79`.
+Audit findings B-01 and B-02, in [docs/audit/04-baseline-issues.md](audit/04-baseline-issues.md).
 
 **Reproduce.** Run the example in a loop and count. At about one failure in 250, sixty runs is
 roughly an hour and may show none:
@@ -242,7 +244,8 @@ The second is an explicit list of demographic channels: `age`, `age2`, `age3`, `
 gets `sqrt(sqrt(sum_of_squares / n) / n)`.
 
 `KevinHall_FINCH` declares `Region`, `Ethnicity`, `Income`, `income_category`, `Age`, `Age2`,
-`Age3` and `Gender` as level-0 risk factors, so all eight are in both lists. Four of the eight are
+`Age3` and `Gender` as level-0 risk factors, which means they are drawn before anything that
+depends on them, so all eight are in both lists. Four of the eight are
 zero either way: `mean_age` is the band's own age and `mean_gender` the file's own sex, so those
 deviations are zero before anything is square-rooted, and `income_category` is constant within a
 stratum file. The four that carry a number are `std_region`, `std_ethnicity`, `std_income` and,
@@ -252,15 +255,16 @@ correct. No mean is affected and no other column is.
 This build **reproduces** the behaviour rather than correcting it, in the whole-population series
 and in the income-stratified one, because a standard deviation is a number somebody may have
 published and the correction is a decision for the model's owners.
-`AnalysisIncomeSeries.ADemographicThatIsAlsoADeclaredFactorHasItsSquareRootTakenTwice` pins the
-reproduced behaviour by name.
+The test
+`AnalysisIncomeSeries.ADemographicThatIsAlsoADeclaredFactorHasItsSquareRootTakenTwice` holds the
+reproduced behaviour in place, so that nobody corrects it here by accident.
 
 ---
 
 ## 6. The energy balance admits a body fat mass below zero, and a year later the weight overflows
 
-**Summary.** `KevinHallModel::kevin_hall_run` integrates body fat straight through zero; past
-−2.001 kg the model's own partition coefficient is beyond a pole, and the next year's weight is a
+**Summary.** `KevinHallModel::kevin_hall_run` integrates body fat straight through zero. Below
+−2.001 kg the model's own partition coefficient is undefined, and the next year's weight is a
 number like −1.7×10²⁸³ kg.
 
 **Affected.**
@@ -288,9 +292,10 @@ closed-form solution of a two-compartment relaxation, one of whose coefficients 
 p = C / (C + F),     C = 10.4 * rho_L / rho_F = 2.001012658227848 kg
 ```
 
-which is undefined at `F = −C`. Past that point `p` is negative, `a1*b2 − a2*b1` is negative, `tau`
-is negative, and `exp(-365.0 / tau)` is an exponential away from the steady state. At a `tau` of
-−0.559 days that is 652 e-foldings in one call.
+which is undefined at `F = −C`. Below that point `p` is negative, `a1*b2 − a2*b1` is negative,
+`tau` is negative, and `exp(-365.0 / tau)` grows away from the steady state instead of decaying
+towards it. At a `tau` of
+−0.559 days, `365 / tau` is −652, so one call multiplies the state by e to the power of 652.
 
 **What should happen.** The model is evaluated only where it is defined. A body fat mass that has
 reached zero does not continue downwards into a region where the model's own coefficient has
@@ -317,7 +322,8 @@ exit code 0**, results written.
 
 This build's guard changes nothing over the same 500 seeds: 499 are byte-identical with it on and
 off, and the five-hundredth is the difference between a results file and no results file. Every
-occurrence is recorded as a located warning in the run's manifest.
+occurrence is recorded in the JSON manifest written beside the results, naming the person and the
+year.
 
 ---
 
