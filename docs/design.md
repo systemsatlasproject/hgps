@@ -20,9 +20,9 @@ burden-of-disease statistics.
 
 Its purpose is comparative: a **baseline** future and an **intervention** future are run from the
 same seed so that the difference between them is attributable to the policy and not to sampling
-noise. That purpose sets the top requirement — **the same config, seed, data and binary must
-produce byte-identical output, every run, at any thread count** — because a comparison you cannot
-reproduce is not evidence.
+noise. That purpose sets the top requirement: **the same config, seed, data and binary must produce
+byte-identical output, every run, at any thread count**. A difference between two futures is only
+evidence if somebody else can reproduce both of them exactly.
 
 ---
 
@@ -87,15 +87,15 @@ graph LR
 The split between the first two is what makes the boundary real: the tests opt into the internals by
 name, because most of them test one class or one loader, and nothing opts in by accident.
 `tests/app/cli_boundary_test.cpp` reads **both hosts'** sources and the published headers and checks
-what each includes — CMake enforces it today, and the test is there because a change to a target's
-include directories would silently stop enforcing it while everything went on working.
+what each includes. CMake enforces the boundary today. The test exists because a change to a
+target's include directories would stop CMake enforcing it without anything failing.
 
-There are two hosts now, and the second one is the point of the first being a library: a contract
-with one implementor is a description of that implementor
-([ADR 0042](decisions/0042-a-local-server-in-the-same-binary.md)). Both are held to the same rule —
-the public API and their own headers, nothing else — and the server matters more, because the server
-is where somebody will one day want a number the API does not expose and reaching into `src/` for it
-would be one line.
+There are two hosts now, and the second one is why the first is a library
+([ADR 0042](decisions/0042-a-local-server-in-the-same-binary.md)). An API with one caller tends to
+be shaped around that caller rather than around the job. Both hosts are held to the same rule: the
+public API and their own headers, and nothing else. The rule matters most for the server, which is
+where somebody will one day want a number the API does not expose, and where reaching into `src/`
+for it would be one line.
 
 The public API is four calls and three opaque handles; [docs/api.md](api.md) is its contract, and
 [docs/server-api.md](server-api.md) is the HTTP contract layered on it. `web/` is a single-page app
@@ -131,9 +131,9 @@ by the same binary, so the graphical host is one executable and one folder.
 About 10,500 lines of the baseline's six largest files become twenty units here, each with a name
 that says what it holds. Fifteen of the twenty are under 400 lines; the exceptions are the two
 model *loaders*, `config/models/static_linear.cpp` at 1,265 and `kevin_hall.cpp` at 550, and
-`data/store.cpp` at 756. Those are long for the same reason in each case — one function per file
-shape, and the FINCH and India packs between them ship a lot of file shapes — and splitting them
-further would separate a reader from the format they are trying to understand.
+`data/store.cpp` at 756. Each of those three is long for the same reason: one function per file
+shape, and the FINCH and India packs between them ship many file shapes. Splitting them further
+would separate a reader from the file format they are trying to understand.
 
 Splitting these is the one structural idea taken wholesale from the earlier rewrite
 ([ADR 0019](decisions/0019-split-the-monolith-translation-units.md)).
@@ -154,11 +154,12 @@ factors exist, and load-time validation checks that they do
 `StaticLinear` reads its per-factor parameters in either of two shapes, because both are in use
 upstream: a set of **CSV matrices** whose rows are predictors and columns are risk factors (FINCH),
 or a **JSON object per factor** (India). The factor order is the correlation matrix's column order
-in both, and it is load-bearing — the Cholesky factor and every per-factor vector are indexed by
-it, so a different order is a different model.
+in both, and that order matters. The Cholesky factor and every per-factor vector are indexed by it,
+so a different order is a different model.
 
-Neither family's model is given a 31-argument constructor. Each takes one `shared_ptr<const
-Parameters>` whose fields are named at the call site and validated in one place
+No model here is constructed from a long positional argument list, as the baseline's is from 31
+arguments. Each takes one `shared_ptr<const Parameters>` whose fields are named at the call site
+and validated in one place
 ([ADR 0029](decisions/0029-one-banded-intervention-shape.md)).
 
 **Which model family sees an intervention.** Only `EBHLM`. `Scenario::apply` — the call that offers
@@ -482,11 +483,11 @@ kind):
 | `<name>_IndividualIDTracking.csv` | optional per-person rows, filtered by `output.individual_id_tracking` — **the baseline writes this one and this build does not** ([docs/backlog.md](backlog.md) item 2) |
 
 `hgps::api::OutputFamily` is that table as an enumeration, and `output_family_of` classifies a path
-into it by the naming this writer implements, read back. It is in the public header because it is
-part of what a caller is told about a run, and it exists because the seventh run found out what
-happens when nothing enumerates what a program puts on disk: the stratified files had been written
-for as long as this build has existed with no comparison, no test and no fixture that produced one,
-and 45 of their columns were empty.
+into it by the naming this writer implements, read back. The enumeration is in the public header
+because it is part of what a caller is told about a run. It exists because nothing previously
+enumerated what this program writes to disk. The stratified files had been written for as long as
+this build has existed, with no comparison, no test and no fixture that produced one, and 45 of
+their columns were empty.
 
 CSV output is written with `std::format`-based fixed formatting (`{:.10g}`) so that a value's text
 does not depend on the platform's locale or on iostream state, and rows are emitted in the order
@@ -494,15 +495,15 @@ given by D10. Ten digits, not the baseline's six: the baseline writes to a `std:
 its default precision, which is the reason the equivalence comparison needs a 10⁻⁵ floor
 ([docs/equivalence.md](equivalence.md)).
 
-**Which columns exist** is a property of the configuration and the loaded models, decided before
-the run starts — never of the population. A demographic channel is written when
-`project_requirements` asks for the dimension **and** a loaded risk-factor model declares that it
-assigns it (`model::AssignedAttributes`). Both halves are needed: the requirement defaults switch
-income and physical activity on for every config including the HLM ones, whose models assign
-neither, and the baseline decides by inspecting the first 1,000 people — so its file's column set
-depends on the contents of a sample of the cohort, and a small cohort can lose a column
-altogether. The risk-factor and disease columns come from the config's declared factor list and
-disease list, in the config's own order.
+**Which columns exist** is a property of the configuration and the loaded models, decided before the
+run starts — never of the population. A demographic channel is written when `project_requirements`
+asks for the dimension **and** a loaded risk-factor model declares that it assigns it
+(`model::AssignedAttributes`). Both halves are needed. The requirement defaults switch income and
+physical activity on for every config, including the HLM ones, whose models assign neither. The
+baseline decides instead by inspecting the first 1,000 people, so its column set depends on the
+contents of a sample of the cohort, and a small cohort can lose a column altogether. The risk-factor
+and disease columns come from the config's declared factor list and disease list, in the config's
+own order.
 
 ---
 
@@ -516,7 +517,7 @@ Five layers, all under `tests/`, all registered with CTest.
 | Tests the baseline lacks | Byte-for-byte reproducibility (twice, and 1 vs N threads); modulo-bias regression; ordered-sampling; unseeded-config rejection; RNG-in-parallel-region rejection; disease-registry mismatch diagnostics. |
 | Fixture-dependent tests | The 35 baseline tests that skip on a missing FINCH pack point at the synthetic fixture pack or the real upstream FINCH example, and **fail** rather than skip when it is missing. Thirty of them now run and pass; the five that do not assert the contents of console tables this build does not print ([docs/test-port-map.md](test-port-map.md)). |
 | Equivalence harness | `tests/equivalence/run.py` — runs the baseline and this implementation on the same converted configs across ≥20 seeds and compares output distributions within documented tolerances (`docs/equivalence.md`). Three examples — `HLM_France`, `KevinHall_FINCH`, and `HLM_India` at a reduced cohort — and each of the six interventions on its own. Not part of the default CTest run — it needs the baseline binary and about twenty minutes — and driven by `scripts/check.sh`, which uses the checked-in references rather than the baseline binary. There is **no failure budget**: any out-of-tolerance comparison fails ([ADR 0027](decisions/0027-equivalence-excludes-the-bands-only-one-side-fills.md)). |
-| The harness's own tests | `tests/equivalence/run_test.py`, registered as `EquivalenceHarness.Rules` and part of the ordinary CTest run, plus `self_check.py` as two more entries that run the harness against this build twice over. The harness decides whether this implementation agrees with the baseline, so a mistake in it says PASS rather than producing a wrong number — and two of its statistical rules have been wrong once each, both found by a twenty-minute run rather than by anything cheap. These check Fisher's exact test, the type-7 quantiles, the printed-precision bucketing, the count-weighted reduction, the lattice rule, and — since [ADR 0039](decisions/0039-scratch-directories-copy-what-they-may-write.md) — that a staged working directory cannot write back into the example it was staged from, in milliseconds. |
+| The harness's own tests | `tests/equivalence/run_test.py`, registered as `EquivalenceHarness.Rules` and part of the ordinary CTest run, plus `self_check.py` as two more entries that run the harness against this build twice over. The harness decides whether this implementation agrees with the baseline, so a mistake in it reports agreement that is not there rather than producing a visibly wrong number. Two of its statistical rules have been wrong once each. These check Fisher's exact test, the type-7 quantiles, the printed-precision bucketing, the count-weighted reduction, the lattice rule, and — since [ADR 0039](decisions/0039-scratch-directories-copy-what-they-may-write.md) — that a staged working directory cannot write back into the example it was staged from, in milliseconds. |
 
 `scripts/check.sh` configures and builds every preset, runs the tests, runs the equivalence harness,
 and fails on the first error. `.github/workflows/ci.yml` is the same work split across jobs — four

@@ -19,8 +19,9 @@ deleting the 471-test suite that was the only evidence any of it was correct. Ni
 defects were found here, by running code the baseline's own tests never reach; they are in
 [docs/deviations.md](docs/deviations.md) as B-21 to B-24 and B-26 to B-30.
 
-The one requirement that shapes everything here follows from what the model is *for*. A comparison
-you cannot reproduce is not evidence, so:
+The one requirement that shapes everything here follows from what the model is for. The whole point
+of a run is the difference between two futures, and attributing that difference to a policy means
+anybody checking it has to be able to reproduce both futures exactly:
 
 > **Same config + same seed + same data + same binary ⇒ byte-identical CSV output, every run,
 > regardless of thread count.**
@@ -35,7 +36,7 @@ that enforces each one.
 
 The simulation is a **library**; everything else is a client of it
 ([ADR 0032](docs/decisions/0032-library-and-a-thin-cli.md)). All three produce byte-identical
-output from the same inputs, and a test asserts that rather than claiming it.
+output from the same inputs, and a test asserts it.
 
 | | What it is | Start with |
 |---|---|---|
@@ -51,8 +52,9 @@ output from the same inputs, and a test asserts that rather than claiming it.
 ```
 
 `hgps serve` binds to **loopback only** and refuses anything else before opening the socket. There
-is no authentication, and that is only safe because it cannot be reached from another machine: a
-configuration names files to read and a folder to write
+is no authentication, and that is only safe because the server cannot be reached from another
+machine. A configuration names files to read and a folder to write, so anybody who can reach the
+server can read and write those files as the user who started it
 ([ADR 0042](docs/decisions/0042-a-local-server-in-the-same-binary.md)).
 
 `scripts/dev.sh` runs the engine and the frontend's dev server together, for working on the latter.
@@ -208,19 +210,20 @@ Validation has two layers ([ADR 0006](docs/decisions/0006-validation-strategy.md
   is named in the test. **426 have a counterpart here**, and 34 do not because the thing they test
   does not exist here by design — the event bus, the sync channel, the lazy repository, the printed
   summary boxes. [docs/test-port-map.md](docs/test-port-map.md) says which, suite by suite. **The 35
-  tests the baseline skips run here**, and finding out whether they pass is how four defects were
-  found. Of the **885** tests here, most are in files the baseline has no counterpart for —
-  byte-for-byte reproducibility at one thread and at N for every intervention, a modulo-bias
-  regression test, ordered-sampling tests, and a test that an unseeded config is rejected, among
-  others. A further **94** test the equivalence harness's own statistics, because a mistake there
-  says PASS rather than producing a wrong number. Every test that runs a configuration runs against
-  **two** synthetic packs, which differ in every way a program might have assumed they did not
-  ([ADR 0044](docs/decisions/0044-two-fixture-packs-and-a-parameterised-suite.md)) — one of them
-  under ThreadSanitizer, where running the same races twice was the largest single cost in CI
-  ([ADR 0046](docs/decisions/0046-what-runs-under-which-sanitizer.md)). The second pack's static
-  model is `StaticLinear`, which is what gives a person an income category, a region, an ethnicity
-  and a sector, and therefore what makes **every output family this engine can write** produced by
-  a fixture ([ADR 0047](docs/decisions/0047-the-second-pack-carries-the-stratified-dimensions.md)).
+  tests the baseline skips run here**, and running them found four defects. Of the **885** tests
+  here, most are in files the baseline has no counterpart for — byte-for-byte reproducibility at one
+  thread and at N for every intervention, a modulo-bias regression test, ordered-sampling tests, and
+  a test that an unseeded config is rejected, among others. A further **94** tests cover the
+  equivalence harness's own statistics. The harness is what decides whether the two implementations
+  agree, so a mistake in it reports agreement that is not there rather than producing a visibly
+  wrong number. Every test that runs a configuration runs against **two** synthetic packs, which
+  differ in every way a program might have assumed they did not ([ADR
+  0044](docs/decisions/0044-two-fixture-packs-and-a-parameterised-suite.md)) — one of them under
+  ThreadSanitizer, where running the same races twice was the largest single cost in CI ([ADR
+  0046](docs/decisions/0046-what-runs-under-which-sanitizer.md)). The second pack's static model is
+  `StaticLinear`, which is what gives a person an income category, a region, an ethnicity and a
+  sector, and therefore what makes **every output family this engine can write** produced by a
+  fixture ([ADR 0047](docs/decisions/0047-the-second-pack-carries-the-stratified-dimensions.md)).
 - **Statistical equivalence against the baseline** on three examples — `HLM_France` for the HLM
   surface, `KevinHall_FINCH` for the FINCH one, and `HLM_India` for the `EBHLM` dynamic model at a
   reduced cohort — over at least 20 seeds and again at 60, comparing means, standard deviations and

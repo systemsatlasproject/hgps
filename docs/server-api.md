@@ -4,8 +4,8 @@
 program — can do what the CLI does: list the examples, validate a configuration and see the
 diagnostics where they belong, start a run and watch it, read the results.
 
-It is **one binary and one folder**: the same executable serves the API and the built web assets,
-so the graphical host is a static site plus this, and not a second runtime to install.
+The server is **one binary and one folder**: the same executable serves the API and the built web
+assets, so the graphical host needs no second runtime installed beside it.
 
     hgps serve                          # 127.0.0.1:8080, no static assets
     hgps serve --port 9000 --web web/dist
@@ -23,8 +23,9 @@ so the graphical host is a static site plus this, and not a second runtime to in
 thread is accepting before returning the port. It has to: cpp-httplib's `stop()` does nothing at all
 unless the server is already running, so a `start()` that returned as soon as the thread was spawned
 could be followed by a `stop()` that was lost, and the join then blocked for ever. A test that made
-a request in between never saw it, because an answer proves the loop is running; the randomised
-lifetime stress test in `tests/server/stress_test.cpp` found it on its first run.
+a request between `start()` and `stop()` never saw the problem, because a served answer proves the
+loop is already running. The randomised lifetime stress test in `tests/server/stress_test.cpp` is
+what exposed it.
 
 **Localhost only, and it refuses to be otherwise.** `--host` accepts `127.0.0.1`, `::1` and
 `localhost` and nothing else; anything that resolves elsewhere is refused at start-up with a message
@@ -74,10 +75,11 @@ whether they arrived as a validation result or as the reason a run would not sta
 | 409 | `run_in_progress` | a second run was requested while one is active |
 | 409 | `run_not_active` | cancelling a run that has already finished |
 | 422 | `config_invalid` | the configuration loaded but did not validate; `diagnostics` says why |
-| 500 | `internal_error` | a broken invariant in the engine. The message carries its source location, because that is a defect here |
+| 500 | `internal_error` | a broken invariant in the engine. The message carries its source location, because such a failure is a defect in the engine rather than a problem with the request |
 
-A `422` is the interesting one: it is not a failure of the request, it is the answer. A client that
-treats it as an error and shows a toast has misread the API.
+A `422` is not a failure of the request. A `422` is the answer to it: the configuration was read,
+and it did not validate. A client should render the diagnostics rather than showing an error
+notification.
 
 ## Endpoints
 
@@ -164,15 +166,16 @@ not load, this is a `422` with the same diagnostics.
 
 ### `POST /api/configs/validate`
 
-The heart of the editor. Takes a document and reports every problem in it, located.
+Takes a configuration document and reports every problem in it, each one located. This is the
+endpoint an editor is built around.
 
 ```json
 { "document": { … }, "base": "HLM_France", "require_files_exist": true }
 ```
 
-`base` names an example whose directory the document's relative paths resolve against — an editor is
-usually editing a copy of something. Without it, relative paths are resolved against the server's
-configs root and are likely to be reported missing, which is honest.
+`base` names an example whose directory the document's relative paths resolve against, because an
+editor is usually editing a copy of an existing example. Without `base`, relative paths resolve
+against the server's configs root, and files that are not there are reported missing.
 
 `require_files_exist: false` maps to `LoadOptions::require_files_exist` and is what an editor uses
 while a document is half-written: it validates the *shape* without insisting the files are there yet.
@@ -199,10 +202,10 @@ while a document is half-written: it validates the *shape* without insisting the
 }
 ```
 
-**`location.pointer` is the point of this endpoint.** It is a JSON Pointer (RFC 6901) into the
-submitted document, so an editor puts the message on the field it names rather than at the top of the
-form. `line` and `column` are for a text editor and may be absent; `pointer` is present whenever the
-engine knows which member it was talking about.
+**`location.pointer` is what makes this endpoint worth calling.** The pointer is a JSON Pointer (RFC
+6901) into the submitted document, so an editor puts the message on the field it names rather than
+at the top of the form. `line` and `column` are for a text editor and may be absent; `pointer` is
+present whenever the engine knows which member it was talking about.
 
 `summary` is present when the document validated, so an editor can show what it would run without a
 second request.
@@ -220,8 +223,9 @@ document, so a client fetches one thing and can generate a form from it.
 { "schema": { … }, "version": 2, "source": "schemas/v2/config.json" }
 ```
 
-The `$ref`s are inlined rather than served as separate files because a schema-driven form generator
-that has to fetch transitively is a form generator with a loading state per field.
+The `$ref`s are inlined rather than served as separate files so that a schema-driven form generator
+fetches one document. Fetching them transitively would give the generator a loading state for every
+field.
 
 ### `POST /api/runs`
 
@@ -243,10 +247,10 @@ result. `baseline_compat` is a list of flag names from `/api/version`, and an un
 **There is no way to run an inline document.** `POST /api/configs/validate` takes one, because
 validating is quick and the scratch file it needs lives for a few milliseconds; a *run* takes
 minutes to an hour, and the same trick would leave a scratch configuration in a configs directory
-for the whole of it. A host that wants to run what is on screen saves it first — which needs config
-*writing*, which the engine does not offer
-([docs/api.md](api.md#what-is-not-here-yet), gap 5). That gap is the reason, and it is worth being
-explicit that this endpoint is the poorer for it.
+for the whole of it. A host that wants to run what is on screen has to save it first, and saving
+needs configuration *writing*, which the engine does not offer yet
+([docs/api.md](api.md#what-is-not-here-yet), gap 5). That missing call is the whole reason this
+endpoint takes an id rather than a document.
 
 ```json
 {
@@ -390,18 +394,17 @@ header. That is what lets one variable selector serve all of them, and it is als
 is meaningful in one and empty in another is invisible from here — the coverage script is what
 checks that ([docs/equivalence.md](equivalence.md), *Every column of every family*).
 
-This is the one endpoint that computes rather than reports, and it earns its place: the alternative
-is every client re-implementing a reduction the harness already had to get right, and getting a
-different answer.
+This is the one endpoint that computes rather than reports. The alternative is every client
+implementing the same reduction again, and arriving at different numbers from the harness.
 
 **One thing in that reduction was wrong in both places until this run, and is fixed.**
 `normal_weight`, `over_weight`, `obese_weight` and `above_weight` are head counts — the analysis
 module increments one per person per band, in both implementations, and neither divides them by
 anything — so their population figure is a sum, and the rule was giving them a count-weighted mean.
-The reduced figure for `normal_weight` on `HLM_France` at (baseline, 2030, male) was **15.3** where
-the population figure is about 1,550: the average band's count. The series still moved with the
-underlying quantity, which is why it never looked wrong, and no comparison was ever wrong about it —
-both implementations were reduced identically — but the level a client charted had no meaning.
+The reduced figure for `normal_weight` on `HLM_France` at (baseline, 2030, male) was **15.3**, where
+the population figure is about 1,550; 15.3 is the average band's count. The series still moved with
+the underlying quantity, so it never looked wrong. No comparison was ever wrong about it either,
+because both implementations were reduced identically. The level a client charted had no meaning.
 
 The two halves went together, because two reductions that disagree would be worse than one that is
 wrong: a client would have no way to tell which it was looking at. `is_counted_column` here and
@@ -458,7 +461,7 @@ thread.
   and `POST /api/runs` takes an example **id** and not a document. So an editor can validate what is
   on screen and cannot run it: to run it, somebody has to save it as a configuration first, which
   needs config *writing*, which the engine does not offer
-  ([docs/api.md](api.md#what-is-not-here-yet), gap 5). That is the gap, stated rather than papered
-  over; this section used to claim the opposite of the endpoint above it.
-- **No equivalence harness.** It is a research instrument that runs two implementations and takes
-  half an hour; it is not a thing to poke from a browser.
+  ([docs/api.md](api.md#what-is-not-here-yet), gap 5). That is the gap, stated here rather than left
+  for a client to discover.
+- **No equivalence harness.** The harness runs two implementations and takes about half an hour,
+  which is not work to start from a browser.

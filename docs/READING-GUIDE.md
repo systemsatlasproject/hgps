@@ -5,8 +5,8 @@ For somebody who is going to **own** this code, reading it end to end for the fi
 The order below is the one that costs the least backtracking: what the project claims, then what it
 found, then how the claims are tested, then how it is built, then the code. Each entry says what
 the thing is, why it exists, roughly how long it takes, and the one question you should be able to
-answer when you put it down. If you cannot answer that question, the fault is the document's and
-it is worth an issue.
+answer when you put it down. If you cannot answer that question after reading it, the document is
+at fault and the gap is worth an issue.
 
 **The whole path is about two and a half days of reading** — roughly six hours of documents, a day
 on the fifty decision records, and a day on 30,000 lines of C++. It is written to be taken in
@@ -40,7 +40,8 @@ proved, what it found in the baseline, and the two questions only they can answe
 is addressed to the people who own the model, and it is therefore the only document that states the
 project's purpose without assuming you accept its premises.
 
-**How long.** Ten minutes. It is deliberately the shortest document in the repository.
+**How long.** Ten minutes. The briefing is deliberately short, and is capped at a quarter of
+[docs/SUMMARY.md](SUMMARY.md) by word count.
 
 **The question.** *Why does a second implementation of an existing simulation exist at all, and
 what has it produced that the first one could not?*
@@ -137,8 +138,8 @@ implementation can run; and [docs/test-port-map.md](test-port-map.md), where eac
 through a run, the determinism contract's fourteen clauses, the parallelism model, the diagnostics
 scheme, config v2, the data store, and the I/O formats.
 
-**Why it exists.** It is the map the source tree assumes you have. Reading `src/` without §2 and §4
-of this document is the main way to waste a day here.
+**Why it exists.** The source tree assumes a reader has this map. Reading `src/` without §2 and §4
+of this document costs about a day of working out the module boundaries from the code.
 
 **How long.** An hour. §2 (module layout), §4 (the determinism contract) and §6 (diagnostics) are
 the three that the code will not make sense without; §3, §7, §8 and §9 can be consulted rather than
@@ -289,7 +290,7 @@ whole of part four is about a day; the three long entries are marked.
 
 ### 11 — `src/model/`, and the two files to read closely
 
-This is where the science is, and it is the only module where reading the `.cpp` files is not
+`src/model/` holds the modelling, and it is the only module where reading the `.cpp` files is not
 optional. Take it in this order:
 
 1. `person.h`, `population.h`, `factor_values.h`, `mapping.h` — what a person is, and why risk
@@ -298,13 +299,12 @@ optional. Take it in this order:
 2. `demographic.cpp` (557 lines) — ageing, birth, death, and net migration.
 3. `riskfactor/` — the model surfaces.
 4. `disease/` — incidence, remission, mortality, and the population-impact-fraction tables.
-5. `analysis/` — the year's means, the burden statistics, and the income strata. This is the last
-   place a value passes through before it becomes output, which is what makes upstream report 7
-   matter as much as it does.
+5. `analysis/` — the year's means, the burden statistics, and the income strata. The analysis
+   module is the last code that sees a value together with the person it belongs to, which is why
+   upstream report 7 matters.
 
-**Two files deserve a careful hour each**, because they are the two model surfaces every comparison
-in this project is a comparison *of*, and because both of them are where the last two runs' findings
-live:
+**Two files deserve a careful hour each.** They carry the two model surfaces that every comparison
+in this project compares, and the last two build runs' findings are both in them:
 
 - **[`src/model/riskfactor/hlm_model.cpp`](../src/model/riskfactor/hlm_model.cpp)** — the
   hierarchical linear model and its dynamic form. This is the surface `HLM_France` and `HLM_India`
@@ -313,9 +313,10 @@ live:
 - **[`src/model/riskfactor/kevin_hall/energy_balance.cpp`](../src/model/riskfactor/kevin_hall/energy_balance.cpp)**
   — the Kevin Hall two-compartment energy balance, 458 lines, solved in closed form once a year.
   Read it with [docs/findings/seed-80.md](findings/seed-80.md) open beside it. The partition
-  coefficient `p = C / (C + F)` has a pole at `F = −2.001012658227848 kg`, the bounded step that
-  stops at the zero crossing is [ADR 0049](decisions/0049-the-energy-balance-is-integrated-only-where-it-is-defined.md),
-  and the whole of the tenth run is about four seeds in five hundred that reach it.
+  coefficient `p = C / (C + F)` has a pole at `F = −2.001012658227848 kg`, and the bounded step
+  that stops at the zero crossing is
+  [ADR 0049](decisions/0049-the-energy-balance-is-integrated-only-where-it-is-defined.md). Four
+  seeds in five hundred reach that bound, and the tenth build run is mostly about them.
 
 ### And the harness
 
@@ -325,9 +326,10 @@ them writes to a series per (family, scenario, year, sex, variable), classifies 
 applies the test the classification calls for, corrects every p-value from every family in one Holm
 pass, and prints a verdict. Every equivalence claim in every document here is this script's output.
 
-Read [docs/equivalence-method.md](equivalence-method.md) first — the script is the method, and the
-method is the readable form of it. Then read `run.py`'s reduction and classification, which are the
-two parts where a mistake would say PASS. Its six companions are smaller and each does one thing:
+Read [docs/equivalence-method.md](equivalence-method.md) first, because that document states in
+prose what the script does in code. Then read `run.py`'s reduction and classification. A mistake in
+either of those two parts reports agreement that is not there, rather than a visibly wrong
+number. Its six companions are smaller and each does one thing:
 `self_check.py` (the harness against itself and against a deliberately wrong build,
 [ADR 0036](decisions/0036-the-harness-is-tested-against-itself.md)), `sweep.py` (many seeds, stored
 reductions), `null_check.py` and `calibrate.py` (the false-positive rate, measured), `seed_scan.py`
@@ -351,7 +353,7 @@ Not part of the path. Go to them when you have the question.
 
 | | |
 |---|---|
-| [docs/glossary.md](glossary.md) | every project term a reader meets, one sentence each, with a pointer to where it is defined properly. Seventy of them; keep it open for the first day |
+| [docs/glossary.md](glossary.md) | every project term a reader meets, one sentence each, with a pointer to where it is defined properly. Seventy entries; keep it open for the first day |
 | [docs/backlog.md](backlog.md) | what is left, ranked, with what was closed and what the numbers used to be |
 | [docs/server-api.md](server-api.md) | the local server's JSON API, endpoint by endpoint |
 | [docs/performance.md](performance.md) | wall time and peak memory against the baseline, and where the time goes |

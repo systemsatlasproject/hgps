@@ -20,8 +20,8 @@ execute(run, options, subscriber, token, report)  -> RunSummary
 Four calls, because they fail differently and cost differently. Loading a configuration is
 milliseconds and needs no network. Resolving data may download two hundred megabytes. Building a run
 reads every model file and is where most input mistakes are found. Executing is minutes. A single
-`run(path)` would make all four indistinguishable to a host that wants to show progress, or to let
-somebody fix a typo without waiting for a download.
+`run(path)` would collapse all four into one step, so a host could neither show which step it was
+on nor let somebody fix a typo without waiting for a download.
 
 Each of the first three returns `nullopt` if anything it found was an error, and appends everything
 it found — errors and warnings both — to the `Report` the caller owns. **A successful call can still
@@ -157,8 +157,9 @@ different idea of presentation reads the fields.
 Every method has an empty default, so a subscriber implements what it uses.
 
 **Delivery is synchronous, on the thread that called `execute`, in the order the run produced them.**
-A subscriber therefore needs no locking — and it also blocks the run for as long as it takes, so a
-slow subscriber is a slow simulation. A GUI's subscriber should post to its own queue and return.
+A subscriber therefore needs no locking. A subscriber also blocks the run for as long as it takes
+to return, so the time it spends is added to the simulation's. A GUI's subscriber should post to
+its own queue and return.
 
 **Events cannot change results.** Nothing emitted is derived from the random stream, and nothing a
 subscriber does is visible to the simulation: there is no way to reach the RNG, the population or the
@@ -184,12 +185,11 @@ A default-constructed token is never cancelled, and is what a caller that does n
 passes.
 
 **"Between scenarios" means a scenario that has not begun does not begin.** That is worth spelling
-out because the code did not do it: a scenario's first simulated year happens before its year loop
+out because the code did not do it. A scenario's first simulated year happens before its year loop
 reaches a cancellation check, so a run cancelled three years into the baseline went on to start the
-intervention and simulate one year of it — leaving a result file whose two futures covered different
-horizons, which is the one thing the pairing exists to rule out. This paragraph was already right and
-the code is now what it says (`src/sim/engine.cpp`); it was found by the first fixture pack with two
-scenarios in it.
+intervention and simulate one year of it. The result file then held two futures covering different
+horizons, which is the one thing the pairing exists to rule out. The code now matches this
+paragraph (`src/sim/engine.cpp`).
 
 ## Results
 
@@ -203,10 +203,10 @@ The engine writes files; it does not hand back a result table. `RunSummary` list
   start and end times, and the scenarios that ran.
 
 **Which of those a path is** is `api::output_family_of(path)`, and `api::all_output_families()` is
-the list. `RunSummary::outputs` is a list of paths, and a host that had to tell a stratum file from
-the whole-population one by matching names by eye was a host that could get it wrong — the local
-server did, with a rule that read "the shortest `.csv` name", true of every file this engine writes
-and enforced by nothing. The enumeration is also what
+the list. `RunSummary::outputs` is a list of paths. A host that had to tell a stratum file from
+the whole-population one by matching names could get it wrong, and the local server did: its rule
+was "the shortest `.csv` name", which is not a property this engine guarantees and which nothing
+enforced. The enumeration is also what
 `OutputFamilies.EveryFamilyTheEngineCanWriteIsProducedByAFixture` holds this project to: a family
 added here with no fixture behind it fails.
 
@@ -219,9 +219,10 @@ output path.
 ## Baseline compatibility flags
 
 `LoadOptions::baseline_compat` and `Configuration::baseline_compat()` carry a set of named
-deviations to put back. With a flag on, the engine reproduces the baseline's behaviour exactly —
-bug and all — so the deviation's effect can be *measured* rather than argued from which
-out-of-tolerance cells look like it ([ADR 0041](decisions/0041-deliberate-deviations-are-switchable.md)).
+deviations to put back. With a flag on, the engine reproduces the baseline's behaviour exactly,
+defect included. The deviation's effect can then be measured by running the same seeds twice, rather
+than inferred from which out-of-tolerance comparisons look like it ([ADR
+0041](decisions/0041-deliberate-deviations-are-switchable.md)).
 
 ```cpp
 hgps::api::LoadOptions options;
@@ -242,11 +243,11 @@ options.baseline_compat.set(hgps::api::CompatFlag::b24);
 
 ## What is not here yet
 
-This API now has **two** implementors — `src/app`, the CLI, and `src/server`, the local JSON server
-([ADR 0042](decisions/0042-a-local-server-in-the-same-binary.md)) — and the second one was built in
-part to find out which of the gaps below actually bite. Two of them do, and are noted as such.
-The rest are listed because they are properties of this document rather than of any host, and are
-worked through with costs in [docs/backlog.md](backlog.md).
+This API now has **two** implementors: `src/app`, the CLI, and `src/server`, the local JSON server
+([ADR 0042](decisions/0042-a-local-server-in-the-same-binary.md)). Building the second one showed
+which of the gaps below cost a host something in practice, and two of them are marked below as
+such. The rest are listed because they are properties of this API rather than of any one host, and
+they are worked through with their costs in [docs/backlog.md](backlog.md).
 
 | | Missing | Consequence for a host |
 |---|---|---|
@@ -258,13 +259,12 @@ worked through with costs in [docs/backlog.md](backlog.md).
 | 6 | **Enumerating a data store.** `Run::description()` says what *this* run will do; nothing says what a pack *offers* — its countries, diseases and risk factors — before a run exists | a host cannot populate a chooser without a run to ask |
 | 7 | **Observable cancellation.** `cancel()` returns at once and the run stops at the end of its current year; there is no way to ask whether it has noticed | a Cancel button cannot honestly change state until `RunCompleted`. **Now felt for real**: `POST /api/runs/{id}/cancel` returns 202 and the state change arrives on the event stream, which is honest and is more machinery in the client than an observable token would need |
 
-None of these is hard. The reason they are listed rather than built is that items 1 and 2 are one
-design decision about result ownership, and making it for a host that did not exist yet is how the
-wrong answer gets locked in.
+None of these is hard. Items 1 and 2 are one design decision about who owns a run's results, and
+making that decision before a second host existed would have fixed it around the CLI alone.
 
-**That host exists now**, and the decision is still not made, deliberately: the summary endpoint
-works by parsing a file, which makes the cost of the gap concrete instead of hypothetical. That is a
-better basis for the design than guessing was.
+**A second host exists now**, and the decision is still open on purpose. The summary endpoint works
+by parsing a file the engine has just written, which gives a measured cost for the gap rather than
+an estimated one.
 
 ## Threading and determinism
 
@@ -281,7 +281,8 @@ simulations at once in one process. Run them in sequence, or in separate process
 
 Nothing a caller is expected to handle. Problems with the caller's input are diagnostics, always. A
 broken invariant inside the engine, or a file it cannot write, comes out as a `std::runtime_error`
-whose message carries a source location — because that is a defect here, not a mistake there.
+whose message carries a source location. Such a failure is a defect in the engine rather than a
+mistake in the caller's input, and the location is where to start looking.
 
 ## Versioning
 

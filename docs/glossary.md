@@ -1,7 +1,8 @@
 # Glossary
 
-Every term this repository uses as if you already knew it. One sentence each, and a pointer to
-where it is defined properly — the pointer is the point of this file, not the sentence.
+Every term this repository uses as if you already knew it. Each entry gives one sentence and a
+pointer to the document that defines the term properly. The sentence is meant to be enough to keep
+reading; the pointer is where to go when it is not.
 
 Alphabetical. Four terms are used in two senses by different documents and each says so in its own
 entry: **family**, **model file**, **reference** and **run**.
@@ -88,9 +89,9 @@ number — a compatibility flag. → [docs/deviations.md](deviations.md),
 [ADR 0024](decisions/0024-deviations-recorded-baseline-bugs-fixed.md)
 
 **dispersion test** — the half of a continuous series' comparison that tests spread rather than
-level (Brown–Forsythe on each sample's absolute deviations from its own median); it is what catches
-a change that moves a band's `std_` and leaves its mean alone.
-→ [docs/equivalence-method.md](equivalence-method.md) §4
+level, by Brown–Forsythe on each sample's absolute deviations from its own median. The dispersion
+test is what catches a change that moves a band's standard-deviation columns (`std_…`) and leaves
+its mean columns alone. → [docs/equivalence-method.md](equivalence-method.md) §4
 
 **dry run** — `healthgps --config FILE --dry-run`: validates the config, the model files, the data
 index and the disease registry and then stops, without simulating anything.
@@ -100,8 +101,8 @@ index and the disease registry and then stops, without simulating anything.
 → [docs/design.md](design.md) §2; `src/model/riskfactor/hlm_model.cpp`
 
 **energy balance** — the Kevin Hall two-compartment model of body fat and lean tissue, solved in
-closed form once per simulated year; the place the tenth run's findings live.
-→ `src/model/riskfactor/kevin_hall/energy_balance.cpp`,
+closed form once per simulated year. Upstream report 6 is about a body fat mass the energy balance
+admits and cannot then solve for. → `src/model/riskfactor/kevin_hall/energy_balance.cpp`,
 [ADR 0049](decisions/0049-the-energy-balance-is-integrated-only-where-it-is-defined.md)
 
 **equivalence** — the claim that two implementations agree, established by a hypothesis test per
@@ -153,8 +154,9 @@ oppositely on purpose, one continuing from the edge of the model's domain and on
 and [0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md)
 
 **harness** — the equivalence harness: the Python under `tests/equivalence/` that runs both
-implementations, reduces and compares their output, and returns a verdict; it has its own test
-suite, because a mistake in it says PASS. → [docs/equivalence.md](equivalence.md),
+implementations, reduces and compares their output, and returns a verdict. The harness has its own
+test suite, because a mistake in it would report agreement that is not there rather than an
+obviously wrong number. → [docs/equivalence.md](equivalence.md),
 [ADR 0036](decisions/0036-the-harness-is-tested-against-itself.md)
 
 **HLM** — the hierarchical linear model, the risk-factor surface `HLM_France` runs on and the only
@@ -234,8 +236,9 @@ factor, loaded from tables named in the data manifest and validated at load; it 
 compared against the baseline, because the only example that uses it cannot run.
 → [ADR 0038](decisions/0038-population-impact-fraction.md)
 
-**point mass** — a series that takes the same value in every seed; it has one bucket, so its exact
-test has nothing to compare and the comparison says so rather than passing silently.
+**point mass** — a series that takes the same value in every seed. Such a series gives the exact
+test a single bucket and nothing to compare, so the comparison reports it as a point mass rather
+than passing it silently.
 → [docs/equivalence-method.md](equivalence-method.md) §5
 
 **pole** — a value at which an expression is undefined because its denominator is zero. The one that
@@ -291,14 +294,16 @@ sex); the unit a comparison tests. → [docs/equivalence-method.md](equivalence-
 ethnicity and a sector; `KevinHall_FINCH` runs on it together with the Kevin Hall surface.
 → `src/model/riskfactor/static_linear/`
 
-**surface (model surface)** — the set of model families a configuration selects, and the thing an
-equivalence claim is a claim about; there are four families and three runnable combinations of them.
+**surface (model surface)** — the set of model families a configuration selects. An equivalence
+claim is always a claim about one surface. There are four families and three runnable combinations
+of them.
 → [docs/design.md](design.md) §2
 
 **sweep** — many seeds of both implementations, with the reductions stored so that a study can score
 them many ways afterwards. → `tests/equivalence/sweep.py`
 
-**two-step value** — a value that remembers what it was last year, for the models that need both.
+**two-step value** — a risk-factor value that carries both this year's number and last year's, for
+the models whose update needs the previous value as well as the current one.
 → `src/model/two_step_value.h`
 
 **upstream** — the Health-GPS project this is a reimplementation of, and its authors; an **upstream
