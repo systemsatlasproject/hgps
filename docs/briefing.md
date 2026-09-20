@@ -1,77 +1,117 @@
-# A note for the Health-GPS authors
+# A briefing for the Health-GPS authors
 
-A second implementation of Health-GPS, in C++20, compared against yours run for run. Not a fork and
-not a proposed replacement: it exists to find out what the model does when two independent
-implementations are held against each other. It covers the surface your examples use — HLM and its
-dynamic form, static linear, Kevin Hall, the disease and analysis modules, PIF, six intervention
-types — reading your configs through a converter and your packs unchanged. Everything below is a
-bug report in [docs/upstream-reports.md](upstream-reports.md), and the long form is
-[docs/SUMMARY.md](SUMMARY.md). To reproduce any of it:
-`tests/equivalence/run.py --example HLM_France --seeds 20 --use-reference` needs no baseline binary,
-and `--refresh-reference` runs yours instead ([docs/build-notes.md](build-notes.md)).
+For a reader with twenty minutes. Project terms are defined in [docs/glossary.md](glossary.md).
 
-## What it proves, and what it does not
+## What this is
 
-**Proved.** Three of your six examples — `HLM_France`, `HLM_India`, `KevinHall_FINCH` — run end to
-end in both implementations and agree statistically: **62,030 tests over two examples' stored
-references this run, none failing, no failure budget on any example**
-([docs/equivalence.md](equivalence.md)). Each is a hypothesis test per (family, scenario, year, sex,
-variable), and the threshold is a **family-wise false-positive rate of 1%** under Holm, measured on
-a null first — 922,564 tests, **zero failures against 0.30 expected**
-([docs/equivalence-method.md](equivalence-method.md) §4).
+This repository is a second implementation of Health-GPS in C++20, covering the model surface your
+own examples use. It is not a fork of your code and not a replacement for it. Its purpose is to run
+both implementations on the same configurations and seeds and to report where their results differ.
 
-**Not proved.** `HLM_India` is compared at a hundredth of the cohort it ships — 12,406 people
-against 1,240,613. The FINCH surface is one country and one pack. PIF has never met the baseline,
-because the only example using it cannot run. The floor is your CSV's six significant digits. And
-both HLM examples' stratum files are empty in *both* builds, so only `KevinHall_FINCH` checks
-those 49 columns.
+## What it proves, and how
 
-## What we found in your code
+Three of your six examples run to the end in both implementations and agree statistically:
+`HLM_France`, `HLM_India` and `KevinHall_FINCH`. The comparison was **62,030 tests over two
+examples' stored references, none failing, with no failure budget**
+([docs/equivalence.md](equivalence.md)). One test covers one variable, scenario, year and sex in one
+output file. The pass rule is a **family-wise false-positive rate of 1%** under Holm's correction,
+measured before it was adopted by comparing one build against itself: **30 pairs, 922,564 tests,
+zero failures against 0.30 expected** ([docs/equivalence-method.md](equivalence-method.md) §4).
 
-Evidence and a pinning test for each in [docs/deviations.md](deviations.md). All but the last are
-fixed here, switchably, so a comparison can measure what each costs.
+This build carries **885 C++ tests**, passing under four build configurations, and **94 tests** over
+the comparison harness's own statistics. CI runs **16 jobs and all 16 pass**
+([docs/SUMMARY.md](SUMMARY.md)).
 
-| ID | What it does | How we know |
-|---|---|---|
-| **B-29** | the energy balance integrates a body fat mass through zero, past the pole of its own partition coefficient | seed 80 of `KevinHall_FINCH`: −2.224 kg of fat in 2030, −1.7×10²⁸³ kg in 2031. Report 6 |
-| **B-30** | a risk factor that is `NaN` is counted as **zero** in the year's means and nothing says so; an infinity is not looked at at all | `analysis_module.cpp:385-391`: three people of 80 kg, one `NaN`, report 53.3 kg. Report 7 |
-| **B-24** | the food-labelling policy re-applies its impact to somebody who failed an earlier coverage draw | +0.209% of mean male BMI on `HLM_France`; on `HLM_India` it moves 194 other series |
-| **B-25** | an intervention on the Kevin Hall surface has no effect, and the run reports success | `simple` and `marketing`: identical result files. Report 2 |
-| **B-21** | immigration into an empty age-sex band abandons that band's target silently, so the cohort falls short of its projection | 197 band counts short on `HLM_France`, every one an empty band |
-| **B-26, B-27** | a PIF fraction the store cannot supply is a silent no-op, a gap inside a table reads as zero, and the published schema has the sex column backwards | `KevinHall_PIF`: 4 of 15 diseases have no `Smoking` table; `cervicalcancer` is non-zero only at `Gender=1` |
-| **B-22, B-05, B-06** | `std_income` is emitted and never filled; a seed gives different answers on different standard libraries; an absent seed is recorded as `0` | all 4,884 rows of a FINCH run; `static_linear_model.cpp:1952`; `mtrandom.cpp:8` |
-| *(reproduced, not fixed)* | every demographic standard deviation that is also a declared risk factor has its square root taken **twice** | `std_region` is **0.122097** where the spread is 0.745 — its square root over 50. Report 5: the correction is yours |
+Five limits apply. `HLM_India` has only ever been compared at **12,406 people against the 1,240,613
+it ships**. The Kevin Hall surface has been compared on one country and one pack. The population
+impact fraction has never met your binary, because its only example cannot run. Your result files
+carry six significant digits, so no comparison is tighter than 10⁻⁵ relative. Only `KevinHall_FINCH`
+fills the income-stratified files, because nobody in an HLM example has an income category
+([docs/equivalence.md](equivalence.md)).
 
-## The two we would send first
+## What the comparison found in your code
 
-**Your energy balance admits a body fat mass below zero, and a year later the weight overflows.**
-`p = C / (C + F)` in `kevin_hall_run` has a pole at `F = −C = −2.001012658227848 kg`. You floor a
-negative fat estimate at *initialisation* (`kevin_hall_model.cpp:920`, your comment says it is to
-keep `p` finite) and never again; neither did we. Past the pole `p`, the determinant and `tau` all
-change sign, and `exp(-365.0 / tau)` at −0.559 days is 652 e-foldings. **It is your arithmetic as
-much as ours**: those statements, in a program sharing no code with this project, fed the state we
-traced, return `-1.7019180456941172e+283` against our `-1.7019180456941046e+283`. It is **four
-seeds in five hundred**, and on three of the four **both implementations complete and write the
-impossible person out** — `validate_weight_in_config_range` throws below the configured minimum and
-only *warns* above it. Nothing warns in the aggregate output beforehand; the trace is
-[docs/findings/seed-80.md](findings/seed-80.md).
+Eight findings, plainest first. Evidence for each is in [docs/deviations.md](deviations.md), and
+seven are written up in [docs/upstream-reports.md](upstream-reports.md).
 
-**A risk factor that is not a number becomes a zero in the reported mean, silently.**
-`AnalysisModule::calculate_historical_statistics` substitutes `0.0` for a `NaN` and divides by the
-whole head count; `std::isnan` is false for `±inf`, so an infinity is not looked at at all. It is
-the last place that knows whose a value is, and it turns any upstream defect into a wrong mean.
+**A `NaN` risk factor is counted as zero in the year's mean, and an infinity is not checked at
+all.** Three people of 80 kg, one with a `NaN` weight, report a mean of 53.3 kg
+(`analysis_module.cpp:385-391`). **B-30**, report 7.
 
-## Two decisions only you can make
+**Four demographic standard deviations have their square root taken twice**, because two loops in
+`AnalysisModule::calculate_standard_deviation` finish the same channel. `std_region` is **0.122097**
+where the band's spread is 0.745, and `std_ethnicity`, `std_income` and `std_sector` go the same
+way. This build reproduces it, because the correction is yours. Report 5.
 
-**`KevinHall_India` and `KevinHall_PIF` stop in their first simulated year in both
-implementations**, and it is one defect rather than two — their data files are byte-for-byte
-identical. Both put `Weight`'s lower bound at 3.319358 kg and the quantile curve gives newborns
-below it (3.159 kg and 2.544 kg), so no seed, cohort size or horizon avoids it. Either the bound or
-the curve is wrong, and changing either here would be inventing a number for a fitted model. It
-blocks two examples and the only PIF comparison there could be (report 1).
+**The food-labelling policy applies its impact more than once** to anybody who fails an early
+coverage draw and passes a later one. The measured effect is **+0.209% of mean male BMI on
+`HLM_France`** and +0.160% on `HLM_India`. **B-24**.
 
-**Where should a policy that shifts a nutrient be applied on the Kevin Hall surface** — before the
-energy balance runs, after it, or to the intake targets? Each answer gives a different number and
-it belongs to whoever fitted the model. B-25 makes it a no-op upstream today; this build refuses
-such a config at load time, right if the alternative is silence and wrong if a policy is meant to
-apply there. Until it is answered, four of your six examples run only with a no-op policy.
+**An intervention on the Kevin Hall or static-linear surface has no effect, and the run reports
+success.** `Scenario::apply` has one call site in your tree, and neither `kevin_hall_model.cpp` nor
+`static_linear_model.cpp` calls it. `KevinHall_FINCH` with `simple` and with `marketing` produces
+identical result files. **B-25**, report 2.
+
+**Immigration into an empty age-sex band abandons that band's target silently.** On `HLM_France`,
+**197 of your band counts** fall short of the demographic projection, and every one of those bands
+holds zero people (**B-21**).
+
+**Three defects on the population impact fraction path.** A fraction the data store cannot supply is
+a silent no-op, and a gap inside a supplied table reads as exactly zero (**B-26**). The published
+schema gives the sex column as 0 for female and 1 for male, the opposite of your loader and your
+data (**B-27**). In `KevinHall_PIF`, 4 of 15 diseases have no `Smoking` table.
+
+**Three smaller defects.** `std_income` is written as a column and never filled: zero in all 4,884
+rows of a `KevinHall_FINCH` run (**B-22**). An income distribution is built by iterating an
+`std::unordered_map`, so one seed gives different income categories under different standard
+libraries (`static_linear_model.cpp:1952`, **B-05**). A config with no seed draws one from
+`std::random_device` and records it as `0` (`mtrandom.cpp:8`, **B-06**).
+
+**The energy balance admits a body fat mass below zero, and a year later the weight overflows.** The
+partition coefficient `p = C / (C + F)` has a pole at `F = −2.001012658227848 kg`, and your code
+floors a negative fat estimate at initialisation only (`kevin_hall_model.cpp:920`). On seed 80 of
+`KevinHall_FINCH`, body fat reaches −2.224 kg in 2030 and weight −1.7×10²⁸³ kg in 2031, a number
+your own statements reproduce. Body fat goes below zero on **four seeds in five hundred**, and on
+three of those four both implementations finish and write the person out. **B-29**, report 6, traced
+in [docs/findings/seed-80.md](findings/seed-80.md).
+
+## The two example packs that do not run
+
+`KevinHall_India` and `KevinHall_PIF` stop in their first simulated year, in both implementations
+and on every seed. Both put the lower bound of `Weight` at **3.319358 kg**, and both give newborns a
+weight below it from the shipped quantile curve on ordinary draws. Your binary stops at 3.1084 kg
+and this build at 3.159 kg and 2.544 kg, on the first and the fifth person of the cohort, so no seed
+or cohort size avoids it.
+
+The two failures are one defect, because `India.DataFile.csv` and both weight-quantile files are
+byte-for-byte identical between the directories. Either the bound or the curve is wrong, and
+changing either means changing a fitted model. Report 1.
+
+## The question we cannot answer
+
+**Where should a policy that changes a nutrient intake be applied on the Kevin Hall surface: before
+the energy balance runs, after it, or to the intake targets?**
+
+Each answer gives a different number, and the choice belongs to whoever fitted the model. **B-25**
+above hides the question today, by making such a policy a no-op in your build. This build refuses
+the configuration at load time instead. Until the question is answered, four of your six examples
+can only be compared with no policy active.
+
+## How to reproduce the comparison
+
+The comparison runs against checked-in reductions of your binary's output, so it needs no baseline
+binary:
+
+```bash
+tests/equivalence/run.py --example HLM_France --seeds 20 --use-reference
+```
+
+Passing `--refresh-reference` runs your own binary instead; [docs/build-notes.md](build-notes.md)
+records the reference build of Health-GPS `3.0.0.0`.
+
+## What is being offered
+
+Seven of the findings above belong to you rather than to this repository, and
+[docs/upstream-reports.md](upstream-reports.md) writes each up with the command that reproduces it
+on your binary and your data. Every deviation carries a switch that puts your behaviour back, so its
+cost can be measured ([docs/deviations.md](deviations.md)). All of it is yours under BSD-3-Clause.
