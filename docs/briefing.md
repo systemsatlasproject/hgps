@@ -50,9 +50,9 @@ year and reaches in a later one. The measured effect is **+0.209% of mean male B
 and +0.160% on `HLM_India`. **B-24**.
 
 **An intervention selected with the Kevin Hall or static-linear models has no effect, and the run
-reports success.** `Scenario::apply` has one call site in your tree, and neither `kevin_hall_model.cpp` nor
-`static_linear_model.cpp` calls it. `KevinHall_FINCH` with `simple` and with `marketing` writes
-identical files. **B-25**, report 2.
+reports success.** `Scenario::apply` has one call site in your tree, and neither
+`kevin_hall_model.cpp` nor `static_linear_model.cpp` calls it. `KevinHall_FINCH` with `simple` and
+with `marketing` writes identical files. **B-25**, report 2.
 
 **Immigration into an empty age-sex band abandons that band's target silently.** On `HLM_France`,
 **197 of your band counts** fall short of the demographic projection, and every one of those bands
