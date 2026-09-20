@@ -49,8 +49,8 @@ way. This build reproduces it; the correction is yours. Report 5.
 year and reaches in a later one. The measured effect is **+0.209% of mean male BMI on `HLM_France`**
 and +0.160% on `HLM_India`. **B-24**.
 
-**An intervention on the Kevin Hall or static-linear surface has no effect, and the run reports
-success.** `Scenario::apply` has one call site in your tree, and neither `kevin_hall_model.cpp` nor
+**An intervention selected with the Kevin Hall or static-linear models has no effect, and the run
+reports success.** `Scenario::apply` has one call site in your tree, and neither `kevin_hall_model.cpp` nor
 `static_linear_model.cpp` calls it. `KevinHall_FINCH` with `simple` and with `marketing` writes
 identical files. **B-25**, report 2.
 
@@ -91,7 +91,7 @@ changing either means changing a fitted model. Report 1.
 
 ## The question we cannot answer
 
-**Where should a policy that changes a nutrient intake be applied on the Kevin Hall surface: before
+**Where should a policy that changes a nutrient intake be applied in the Kevin Hall model: before
 the energy balance runs, after it, or to the intake targets?**
 
 Each answer gives a different number, and the choice belongs to whoever fitted the model. **B-25**
