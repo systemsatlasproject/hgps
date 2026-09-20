@@ -1,5 +1,8 @@
 # Summary of the tenth build run
 
+> This file is the internal record, written for readers who already have the context;
+> [docs/briefing.md](briefing.md) says the same things plainly and in a quarter of the words.
+
 ## State of the project
 
 For somebody opening this repository cold, in five sentences.
