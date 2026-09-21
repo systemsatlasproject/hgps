@@ -87,8 +87,7 @@ against a deliberately wrong build** — it has to detect a defect that was put 
 ## 7. Portability
 
 This build compiles on **macOS and Linux** as shipped. The baseline needs four source changes to
-build on macOS at all (**B-10**), and [docs/build-notes.md](build-notes.md) records every one of
-them, which is most of the work of fixing it. That one is a gift rather than a claim.
+build on macOS at all (**B-10**). [docs/build-notes.md](build-notes.md) records all four.
 
 ## 8. A library, not a program
 
