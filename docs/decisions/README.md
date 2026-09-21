@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Fifty records, one per design choice, each stating the context, the decision, the alternatives that
+Fifty-one records, one per design choice, each stating the context, the decision, the alternatives that
 were rejected and the consequences ([ADR 0001](0001-record-architecture-decisions.md)). They are
 numbered in the order they were taken, which is roughly the order the project happened in, and they
 are never rewritten: a decision that was later changed is superseded by a new record rather than
@@ -22,6 +22,7 @@ search for the number.
 - [0003 — The four source folders are read-only; the baseline builds out of tree](0003-read-only-sources-and-out-of-tree-baseline-build.md) — the upstream checkouts are evidence, so nothing here may write to them.
 - [0024 — Baseline bugs are fixed, not reproduced; every deviation is recorded](0024-deviations-recorded-baseline-bugs-fixed.md) — bit-exact agreement is explicitly not a goal, and the price is a register of differences.
 - [0041 — A deliberate deviation is always switchable, so its effect can be measured](0041-deliberate-deviations-are-switchable.md) — every deviation that moves a number gets a compatibility flag, which is what makes its cost a measurement.
+- [0051 — The audit's finding IDs are frozen; this project's own findings get their own prefix](0051-finding-ids-audit-frozen-project-findings-renumbered.md) — why there are five prefixes and not one, and the table that migrates a config written before it.
 
 ## Toolchain, platforms and dependencies
 

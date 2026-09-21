@@ -15,7 +15,7 @@ The letter says where the finding came from, not how severe it is:
 The first three come from an audit of your code and your data carried out on 2026-09-17, before the rewrite and each has an entry in [docs/audit/](audit/) to look up. 
 A `P-nn` has no audit entry, because it was found later; its evidence is in [docs/deviations.md](deviations.md) and in this document.
 
-No finding here depends on this repository's implementation being correct. Everything was measured against Health-GPS `3.0.0.0`, built as [docs/build-notes.md](build-notes.md) records, on macOS
+No finding here depends on this repository's implementation being correct. Everything was measured against your `main` branch — which reports itself as Health-GPS `3.0.0.0`, as your latest release also does — cloned on 2026-09-14 and still at the head of `main` today, built as [docs/build-notes.md](build-notes.md) records, on macOS
 26.6.2 with Apple clang 21, against the `imperialCHEPI/healthgps-examples` pack.
 
 ## What this is
@@ -42,12 +42,28 @@ This build carries **885 C++ tests**, passing under release, debug and two sanit
 **94 tests** over the harness's own statistics. CI runs **16 jobs and all 16 pass**
 ([docs/SUMMARY.md](SUMMARY.md)).
 
-Five limits apply. `HLM_India` has only been compared at **12,406 people against the 1,240,613 it
-ships**. The Kevin Hall energy-balance model has been compared on one country and one pack. The
-population impact fraction has never met your binary; its only example cannot run. Your result files
-carry six significant digits, so no comparison is tighter than 10⁻⁵ relative. Only `KevinHall_FINCH`
-fills the result files split by income category, because nobody in an HLM example has one
-([docs/equivalence.md](equivalence.md)).
+Five limits apply, and each has a cause worth knowing
+([docs/equivalence.md](equivalence.md) has all five in full).
+
+1. **`HLM_India` has only been compared at 12,406 people against the 1,240,613 it ships**, at a
+   `size_fraction` of `1e-5`. At the shipped cohort one seed is about forty minutes in this build
+   and over an hour in yours, so twenty seeds of both is roughly a day of machine time. The
+   reduction is what made the comparison possible at all, and nothing in it is evidence about the
+   cohort the example actually ships.
+2. **The Kevin Hall energy-balance model has been compared on one country and one pack**, because
+   `KevinHall_FINCH` is the only one of your three Kevin Hall examples that runs. `KevinHall_India`
+   and `KevinHall_PIF` both stop in their first simulated year, on one defect and the same data
+   files byte for byte (report 1).
+3. **The population impact fraction has never met your binary**, because the only example that uses
+   it is `KevinHall_PIF`, which is one of the two that cannot run. It is exercised end to end here
+   against a synthetic pack only, so nothing about it has been compared against your implementation.
+4. **No comparison is tighter than 10⁻⁵ relative**, because your result files are written at six
+   significant digits. That is a floor imposed by the output format rather than a measurement of how
+   closely the two implementations agree.
+5. **The result files split by income category are compared, but on the HLM examples they are two
+   empty files agreeing.** No person in `HLM_France` or `HLM_India` has an income category, so 44 of
+   52 columns and 102 of 110 are identically zero on both sides. `KevinHall_FINCH` is the only
+   example whose models assign one, and therefore the only one where those files test anything.
 
 ## What is in this document, and how it is ordered
 
@@ -93,12 +109,13 @@ switching your behaviour back with `--baseline-compat P-04` is how the cost was 
 **+0.209% of mean male BMI on `HLM_France`** and +0.160% on `HLM_India`. **P-04**, with the full
 measurement in [docs/deviations.md](deviations.md).
 
-**An intervention selected with the Kevin Hall or static-linear models has no effect, and the run
-reports success.** `Scenario::apply` has one call site in your tree, and neither
+**An intervention from the `interventions` block has no effect on the Kevin Hall or static-linear
+models, and the run reports success.** `Scenario::apply` has one call site in your tree, and neither
 `kevin_hall_model.cpp` nor `static_linear_model.cpp` calls it. `KevinHall_FINCH` with `simple` and
-with `marketing` writes identical files. This build refuses the configuration at load time,
-because where the policy *should* apply is the open question this document ends on. **P-05**,
-report 2.
+with `marketing` writes identical files. This is about one of your two policy mechanisms: the other
+one, `policy_start_year` with the policy-effect coefficients, works on that surface and is what
+FINCH actually uses. The defect is that selecting the wrong mechanism looks like success. This build
+refuses the configuration at load time. **P-05**, report 2.
 
 **Immigration into an empty age-sex band abandons that band's target silently.** On `HLM_France`,
 **197 of your band counts** fall short of the demographic projection, at ages 93 to 100, and every
@@ -140,7 +157,7 @@ and the evidence behind it.
 | | Report | Needs |
 |---:|---|---|
 | 1 | `KevinHall_India` and `KevinHall_PIF` stop in their first simulated year | a decision about a fitted model |
-| 2 | An intervention selected with the Kevin Hall or static-linear models has no effect | a decision about a fitted model |
+| 2 | An intervention from the `interventions` block has no effect on the Kevin Hall or static-linear models | a diagnostic; then a decision about a fitted model only if the block is meant to reach that surface |
 | 3 | `KevinHall_FINCH`'s legacy `static_model.json` names two files the pack lacks | a decision, or a deletion |
 | 4 | The baseline exits on a signal on about one `KevinHall_FINCH` run in 250 | a concurrency fix |
 | 5 | Four demographic standard deviations have their square root taken twice | a code fix, and a decision about published numbers |
@@ -216,12 +233,21 @@ build, all 69 fraction tables and both scenarios, and then stops on this.
 
 ## 2. An intervention selected with the Kevin Hall or static-linear models has no effect
 
-**Summary.** A configuration that selects an intervention alongside either of those models runs to
-completion, reports success, and produces output byte-identical to a run with no policy at all.
+**Summary.** A configuration that selects an intervention from the `interventions` block alongside
+either of those models runs to completion, reports success, and produces output byte-identical to a
+run with no policy at all.
+
+**This is not a claim that the surface has no policy mechanism.** Your tree has two, and they are
+unrelated. The one that works there is `modelling.policy_start_year`, from which `StaticLinear`
+applies the policy-effect coefficients and the residual policy covariance to the intervention
+scenario — `initialise_policies` and `update_policies` in `static_linear_model.cpp`, the mechanism
+`KevinHall_FINCH` in fact uses, with `policy_start_year` 2024 and the S1 policy files. This report
+is about the *other* mechanism: the age-banded impacts in the config's `interventions` block, which
+reach a person only through `Scenario::apply`.
 
 **Affected.** `Scenario::apply` has exactly one call site in the whole tree,
 `dynamic_hierarchical_linear_model.cpp:110`. Neither `static_linear_model.cpp` nor
-`kevin_hall_model.cpp` calls it.
+`kevin_hall_model.cpp` calls it. Still one call site on `main` as this is written.
 
 **Reproduce.** With any two of the six intervention types the example defines:
 
@@ -237,17 +263,32 @@ code says the policy was never applied.
 **What should happen.** Either the policy applies to the selected models, or the configuration is
 refused at load time.
 
-**Suggested fix.** The fix depends on an answer only you have: is a policy *meant* to apply
-alongside those models? If it is, then **where** it applies changes the result — before the energy
-balance runs, after it, or to the intake targets — and that is a modelling decision with a fitted
-model behind it. If the inertness is a defect, the configuration should be refused rather than run.
-This build refuses it, naming the intervention, the number of impacts it declares and the dynamic
-model file.
+**Suggested fix.** Two parts, and only the second needs a modelling answer.
+
+The first is cheap and needs nothing from anybody: **a config that selects an intervention with
+declared impacts on a model that cannot apply them should say so**, at load time or in the log,
+rather than running to completion and reporting success. This build refuses it, naming the
+intervention, the number of impacts it declares and the dynamic model file.
+
+The second is yours: **is the `interventions` block meant to be inert on that surface?** If it is —
+if the policy-effect coefficients are the only intended mechanism there — then the answer is the
+refusal above and nothing else changes. If it is not, then **where** an age-banded impact should
+land changes the result: before the energy balance runs, after it, or on the intake targets. That
+is a modelling decision with a fitted model behind it, and it is the one thing here nobody outside
+your group can settle.
 
 **Evidence.** All six intervention types were run with those models. In every pair, the baseline
 future and the intervention future wrote identical files. The single call site can be found by grep
 in both source trees. This blocks the comparison of four of your six examples with any policy that
-does anything.
+does anything through the `interventions` block.
+
+**Why this has probably never bitten you.** Nothing in your examples selects an age-banded
+intervention on that surface. `KevinHall_FINCH` ships `simple` with an **empty impacts list**, which
+is the block saying "no policy here", and takes its policy from `policy_start_year` instead. So the
+inert path is only reached by somebody who configures the block expecting it to work — which is what
+this project did. Your published documentation describes the policy-effect mechanism for FINCH and
+does not mention that the other one is inert there, and we found no issue in your tracker recording
+it.
 
 ---
 
@@ -510,29 +551,32 @@ your source and by running your binary alone, rather than by holding the two imp
 each other. None is written up as a report, because none of them needs anything from you beyond a
 fix.
 
-| | What | Where | What it costs |
+As with the eight findings above, the last column says what this build does about the defect,
+because a fix in a reimplementation does nothing for anybody running yours.
+
+| | What | Where | What it costs, and what this build does |
 |---|---|---|---|
 | **P-03** | `project_requirements.two_stage.use_logistic` is read into the configuration structure and then consulted nowhere. The two-stage first step runs whenever the model file has a `logistic_regression` entry, whatever the flag says | the configuration structure and every use of the field | the FINCH pack sets the flag to `false`, ships the file, and is fitted to the behaviour with the first step **on**. Running `KevinHall_FINCH` both ways moves `mean_redmeat` by **30%**. This build lets the model file decide, because that is what the data was fitted to, and reports the disagreement as a warning naming which one decided |
-| **B-02** | a lock-free read path on the shared disease map races a locked insert made from another thread | `repository.cpp:56-58` against `:134`, both reached from `disease.cpp:79` | about **one `KevinHall_FINCH` run in 250** exits on `SIGTRAP` or `SIGABRT` having written nothing usable, and the same seed succeeds on a re-run: 2 of 500 runs measured here. ThreadSanitizer names the race directly. Written up as report 4 |
-| **B-01** | the baseline and intervention scenarios run on concurrent threads and publish result rows asynchronously | `runner.cpp:85-92`, `event_monitor.h:47-53` | three runs of one seed produced three different file hashes, and sorting made them byte-identical. No value moved, so the cost is that two runs of one configuration cannot be compared as files |
-| **P-08** | `data_root_path` is required by the population impact fraction schema and has its `${VAR}`s expanded, then is overwritten with the data store's own root before anything reads it | `repository.cpp:118` | a configuration that points the field anywhere else has been misled, with nothing said. The field has never done anything |
-| **B-09** | the `-s/--storage` option cannot be used: the program errors unless exactly one of `-s` and `config.data` is present, and the published schema makes `data` required | `program.cpp:130-135` against `schemas/v1/config.json` | running `-s <dir>` with an otherwise valid config gives *"Invalid configuration - : Required property 'data' not found."* |
-| **B-08** | `output.file_name` is ignored unless the configured name contains a `{…}` token | `configuration.cpp:231-261` | configuring `"file_name": "result.json"` produces `HealthGPS_result_<timestamp>.json` |
-| **B-11** | 35 of your 471 tests skip silently, on an undocumented path relative to `__FILE__` that matches the layout of neither data repository | `KevinHallHeight.Test.cpp:21-26` and four sibling files | `[ PASSED ] 436 tests. [ SKIPPED ] 35 tests`. A green run proves less than it appears to, across 7.4% of the suite |
+| **B-02** | a lock-free read path on the shared disease map races a locked insert made from another thread | `repository.cpp:56-58` against `:134`, both reached from `disease.cpp:79` | about **one `KevinHall_FINCH` run in 250** exits on `SIGTRAP` or `SIGABRT` having written nothing usable, and the same seed succeeds on a re-run: 2 of 500 runs measured here. ThreadSanitizer names the race directly. This build loads every disease definition during start-up, before any worker thread exists, so the race cannot arise. Written up as report 4 |
+| **B-01** | the baseline and intervention scenarios run on concurrent threads and publish result rows asynchronously | `runner.cpp:85-92`, `event_monitor.h:47-53` | three runs of one seed produced three different file hashes, and sorting made them byte-identical. No value moved, so the cost is that two runs of one configuration cannot be compared as files. This build runs the scenarios sequentially, gives each output file one owner, and writes rows in a defined order |
+| **P-08** | `data_root_path` is required by the population impact fraction schema and has its `${VAR}`s expanded, then is overwritten with the data store's own root before anything reads it | `repository.cpp:118` | a configuration that points the field anywhere else has been misled, with nothing said. The field has never done anything. This build accepts it and warns that it is ignored, rather than rejecting it and making every upstream PIF config unloadable |
+| **B-09** | the `-s/--storage` option cannot be used: the program errors unless exactly one of `-s` and `config.data` is present, and the published schema makes `data` required | `program.cpp:130-135` against `schemas/v1/config.json` | running `-s <dir>` with an otherwise valid config gives *"Invalid configuration - : Required property 'data' not found."* This build has no such option at all: a config's `data` block is the only way to name a store |
+| **B-08** | `output.file_name` is ignored unless the configured name contains a `{…}` token | `configuration.cpp:231-261` | configuring `"file_name": "result.json"` produces `HealthGPS_result_<timestamp>.json`. This build uses the configured name exactly, and `{TIMESTAMP}` and `{JOBID}` are optional |
+| **B-11** | 35 of your 471 tests skip silently, on an undocumented path relative to `__FILE__` that matches the layout of neither data repository | `KevinHallHeight.Test.cpp:21-26` and four sibling files | `[ PASSED ] 436 tests. [ SKIPPED ] 35 tests`. A green run proves less than it appears to, across 7.4% of the suite. Nothing for this build to fix — it is your suite — but [docs/test-port-map.md](test-port-map.md) records where each of your 471 tests went, these 35 included |
 
 ## Defects in the example data packs
 
 These belong to whoever owns `healthgps-examples` and `healthgps-data`. The first two change which
 numbers a run draws; the rest cost a reader time rather than accuracy.
 
-| | What | What it costs |
+| | What | What it costs, and what this build does |
 |---|---|---|
-| **P-11** | `pif-data-v5` ships `diseases/COPD/`, holding nothing but a `PIF/` subtree, for a disease its own registry calls `pulmonary` | `COPD` and `pulmonary` carry **different** `Smoking` tables for what is clinically one disease: maxima 0.00014 and 0.032, and 150 non-zero cells against 2,880. Only `pulmonary` is reachable, because that is what the registry lists, so the `COPD` tables are either dead or the ones that were meant |
+| **P-11** | `pif-data-v5` ships `diseases/COPD/`, holding nothing but a `PIF/` subtree, for a disease its own registry calls `pulmonary` | `COPD` and `pulmonary` carry **different** `Smoking` tables for what is clinically one disease: maxima 0.00014 and 0.032, and 150 non-zero cells against 2,880. Only `pulmonary` is reachable, because that is what the registry lists, so the `COPD` tables are either dead or the ones that were meant. This build makes an unregistered directory carrying disease measures an error and one carrying none a warning naming what it holds, so the pack still loads |
 | — | `France.DataFile.csv` declares `Age` as an integer column and gives **80 of its 40,000 rows** a fractional age. `std::stoi` stops at the first non-digit, so each one is truncated toward zero in silence | truncation is what the data means, because the file's own `Age1` column carries `floor(Age)`. The silence is the part that is wrong. This build performs the same arithmetic and reports it once per column, with a count and the first offending value |
-| **D-02** | `KevinHall_FINCH/static_model.json` names `Finch_residual_policy_covariance.csv` and `policyeffect_model.csv`, and the pack ships seven scenario-prefixed variants of each instead | the legacy configuration cannot be loaded as shipped. Written up as report 3 |
-| **D-04** | the six examples name **five mutually exclusive data releases**, and nothing in either repository records which release a given working copy holds | no single checkout satisfies all six examples |
-| **D-08** | a missing model key prints `Missing key "policy_start_year"` with no file name, no severity marker, and no statement of the value used instead | a silent default in a policy model is invisible to whoever reads the output |
-| **D-06** | `diseases/PIF_Mappings.xlsx` is the only spreadsheet in a machine-read tree. No code reads it and no manifest names it | human documentation that will drift from the CSVs it describes, with nothing able to catch the drift |
+| **D-02** | `KevinHall_FINCH/static_model.json` names `Finch_residual_policy_covariance.csv` and `policyeffect_model.csv`, and the pack ships seven scenario-prefixed variants of each instead | the legacy configuration cannot be loaded as shipped. This build reads the example's modern `new_config.json` instead, and its converter can select any of the seven scenarios explicitly ([ADR 0030](decisions/0030-policy-scenario-selection-for-the-broken-finch-example.md)). Written up as report 3 |
+| **D-04** | the six examples name **five mutually exclusive data releases**, and nothing in either repository records which release a given working copy holds | no single checkout satisfies all six examples. This build fetches each config's data from a release URL with a **required** SHA-256 and caches it content-addressed, so a config pins its own release verifiably and the question cannot arise ([ADR 0011](decisions/0011-data-fetched-not-vendored.md)) |
+| **D-08** | a missing model key prints `Missing key "policy_start_year"` with no file name, no severity marker, and no statement of the value used instead | a silent default in a policy model is invisible to whoever reads the output. This build documents every default in the schema and reports a located warning naming the field whenever one is applied |
+| **D-06** | `diseases/PIF_Mappings.xlsx` is the only spreadsheet in a machine-read tree. No code reads it and no manifest names it | human documentation that will drift from the CSVs it describes, with nothing able to catch the drift. Nothing for this build to fix: no code here reads it either |
 
 ## Defects established by reading your code rather than by measurement
 
@@ -584,13 +628,20 @@ and the shims are recorded in [docs/build-notes.md](build-notes.md).
 
 ## The question we cannot answer
 
-**Where should a policy that changes a nutrient intake be applied in the Kevin Hall model: before
-the energy balance runs, after it, or to the intake targets?**
+**Is the `interventions` block meant to be inert on the Kevin Hall and static-linear models — and if
+it is not, where should an age-banded impact be applied: before the energy balance runs, after it,
+or on the intake targets?**
 
-Each answer gives a different number, and the choice belongs to whoever fitted the model. **P-05**
-and report 2 hide the question, by making such a policy do nothing in your build. This build refuses
-the configuration at load time instead. Until the question is answered, four of your six examples
-can only be compared with no policy active.
+To be clear about what is and is not being asked. That surface is not without a policy mechanism:
+`policy_start_year` and the policy-effect coefficients work there, and `KevinHall_FINCH` uses them.
+The question is whether the *other* mechanism is supposed to reach it as well. If the answer is no,
+the whole of report 2 reduces to "say so at load time rather than reporting success", and nobody
+needs to decide anything about a fitted model.
+
+If the answer is yes, each of the three placements gives a different number, and the choice belongs
+to whoever fitted the model. Until it is settled, four of your six examples can only be compared
+here with no age-banded policy active — which is why this build refuses the configuration rather
+than running it.
 
 ## How to reproduce the comparison
 

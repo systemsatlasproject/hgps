@@ -9,6 +9,24 @@ the four macOS workarounds.
 **The baseline source tree is read-only.** Nothing under `hgps_main/` was modified. All build
 artefacts live under `/tmp/hgps-build/`.
 
+**Which tree `3.0.0.0` means, because the version alone does not say.** `3.0.0.0` is what the
+binary reports, from `project(... VERSION 3.0.0.0)` at `CMakeLists.txt:25`. It is also the tag on
+upstream's latest release, `HealthGPS-v3.0.0.0` of 2026-03-23 — **and it is what `main` declares as
+well**, though `main` is 279 commits and 203 changed files ahead of that tag. So the version string
+does not distinguish the release from `main`.
+
+**This baseline is `main`, not the release.** `hgps_main/` is a clone taken around 2026-09-14, three
+days before the audit. Upstream's newest commit is `d16a6ab8` of 2026-08-11, so the clone was
+already at the head of `main` and nothing has landed upstream since: the tree audited here is
+upstream `main` as it stands. The clone carried no git metadata by the time it was inventoried
+([docs/audit/00-inventory.md](audit/00-inventory.md): *"Remote URL — not recoverable from the folder
+(no git)"*), which is why the exact SHA is not recorded alongside it.
+
+That is the stronger position, not the weaker one. Every finding in
+[docs/upstream-reports.md](upstream-reports.md) is therefore against the code upstream is developing
+on today rather than against a release six months old, and none of them can be answered with
+"fixed since".
+
 ## Host
 
 | | |

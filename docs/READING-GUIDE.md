@@ -99,7 +99,7 @@ read.
 **The question.** *Why can this program produce byte-identical output at one thread and at sixteen,
 and which mechanism enforces that rather than which convention?*
 
-### 6. [docs/decisions/](decisions) — the fifty ADRs
+### 6. [docs/decisions/](decisions) — the fifty-one ADRs
 
 **What it is.** One Architecture Decision Record per design choice, each with its context, the
 decision, the alternatives rejected and the consequences. They are numbered in the order they were
@@ -109,7 +109,7 @@ taken and are never rewritten.
 new owner asks most often and the one the code cannot answer. Several of these records exist
 specifically because the decision looks wrong from outside.
 
-**What to read.** 38,000 words, worth reading end to end once. Short of that, read 0005, 0008,
+**What to read.** 39,000 words, worth reading end to end once. Short of that, read 0005, 0008,
 0024, 0032, 0041, 0048, 0049 and 0050: those eight carry the shape of everything else.
 
 **The question.** *For any surprising thing in this codebase, which record argues for it, and what
@@ -126,6 +126,7 @@ in order within each group.
 - [0003 — The four source folders are read-only; the baseline builds out of tree](decisions/0003-read-only-sources-and-out-of-tree-baseline-build.md)
 - [0024 — Baseline bugs are fixed, not reproduced; every deviation is recorded](decisions/0024-deviations-recorded-baseline-bugs-fixed.md)
 - [0041 — A deliberate deviation is always switchable, so its effect can be measured](decisions/0041-deliberate-deviations-are-switchable.md)
+- [0051 — The audit's finding IDs are frozen; this project's own findings get their own prefix](decisions/0051-finding-ids-audit-frozen-project-findings-renumbered.md)
 
 **Toolchain, platforms and dependencies**
 

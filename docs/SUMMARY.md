@@ -18,8 +18,9 @@ is scale and coverage rather than correctness: `HLM_India` has only ever been co
 hundredth of the cohort it ships, population impact fraction has never met the baseline because the
 one example that uses it cannot run, and no comparison here is tighter than the six significant
 digits the baseline prints. **What needs an upstream decision** is two things, both of them
-blocking: where a policy should apply on the Kevin Hall surface, which leaves four of the six
-examples runnable only with a no-op intervention, and whether the newborn weight bound or the
+blocking: whether the `interventions` block is meant to reach the Kevin Hall surface at all — it is
+inert there while that surface's own policy mechanism works — which leaves four of the six examples
+runnable only with a no-op intervention, and whether the newborn weight bound or the
 quantile curve is wrong in `KevinHall_India`, which stops the other two in their first simulated
 year. Read [docs/READING-GUIDE.md](READING-GUIDE.md) if you are going through the repository end to
 end, [docs/upstream-reports.md](upstream-reports.md) if what you want is what this found in the
@@ -65,7 +66,7 @@ write the impossible person out**.
 | Tests, the frontend | **48** unit, **21** end to end in a browser |
 | Comparisons against the baseline this run | **62,030** tests over two examples' stored references, **0** failures, **no budget** — plus a **1,000-run census** of both implementations and **1,060 paired runs** compared byte for byte |
 | Source | `src/` 153 files, `include/` 6; `tests/` 74 files; 48,432 lines of C++ between them; the equivalence harness 4,656 lines of Python in seven files; `web/src/` 18 TypeScript files and `web/e2e/` 6, 3,136 lines |
-| Documents | **16**, plus **1 finding write-up** and **50 ADRs** behind an index `scripts/check.sh` keeps in sync |
+| Documents | **15**, plus **1 finding write-up** and **51 ADRs** behind an index `scripts/check.sh` keeps in sync |
 | CI | **16 jobs** — see below |
 | Findings this run | **6** |
 
