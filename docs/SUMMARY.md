@@ -66,7 +66,7 @@ write the impossible person out**.
 | Tests, the frontend | **48** unit, **21** end to end in a browser |
 | Comparisons against the baseline this run | **62,030** tests over two examples' stored references, **0** failures, **no budget** — plus a **1,000-run census** of both implementations and **1,060 paired runs** compared byte for byte |
 | Source | `src/` 153 files, `include/` 6; `tests/` 74 files; 48,432 lines of C++ between them; the equivalence harness 4,656 lines of Python in seven files; `web/src/` 18 TypeScript files and `web/e2e/` 6, 3,136 lines |
-| Documents | **15**, plus **1 finding write-up** and **51 ADRs** behind an index `scripts/check.sh` keeps in sync |
+| Documents | **16**, plus **1 finding write-up** and **51 ADRs** behind an index `scripts/check.sh` keeps in sync |
 | CI | **16 jobs** — see below |
 | Findings this run | **6** |
 

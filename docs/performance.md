@@ -429,9 +429,29 @@ baseline spends two cores to finish when this build finishes on one.
 
 That is the trade being made, seen at the size where it is visible: sequential scenarios cost nothing
 on the small examples because the work itself is smaller, and on the large one they cost exactly the
-parallelism — no more. A host that wants India's wall time halved can run the two scenarios as two
-processes and get byte-identical output, which is not something the baseline's shared, lazily
-populated repository allows (audit B-01, B-02).
+parallelism — no more.
+
+**The two scenarios cannot be split across two processes**, and an earlier version of this paragraph
+said they could. The intervention scenario **replays** the baseline scenario's net migration,
+residual-mortality table and risk-factor adjustments out of the `sim::ScenarioJournal`
+([ADR 0009](decisions/0009-sequential-scenarios-and-the-migration-journal.md)), so it cannot start a
+year before the baseline has finished that year. The journal is in memory and is never serialised,
+and nothing in the API or the CLI runs one scenario alone. Two processes would therefore be
+sequential with a copy in the middle.
+
+**What is available, if this 2× is ever worth buying.** The dependency is per-year rather than
+whole-run, so the intervention can run year *Y* while the baseline runs year *Y+1* — the pipeline
+upstream's `SyncChannel` implements, with the same ceiling of about 1.6×. Building it here would
+start from a better place than upstream's: each scenario draws from its own stream, and the journal
+is keyed by `(run, time)`, so the ordering is explicit in the data rather than a property of when
+two threads happen to arrive. Cheaper still, and untouched by any of this, is parallelism **across
+trial runs**: `rng::derive_run_seed(master, index)` makes runs independent by construction and the
+journal is already keyed by run.
+
+What cannot be had is the two scenarios as independent units. The intervention is *defined* as
+seeing the same migration and mortality draws as the baseline; recomputing them would make the two
+futures differ by sampling noise as well as by the policy, which is the alternative ADR 0009
+rejects.
 
 **This is the first time the baseline has been run on `HLM_India` at all**, on any machine, in any
 run of this project. It exits 0 and writes the same 16,564 rows to each of the same four files.

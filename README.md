@@ -81,6 +81,7 @@ open beside it.
 | [docs/test-port-map.md](docs/test-port-map.md) | where each of the baseline's 471 tests went, suite by suite |
 | [docs/backlog.md](docs/backlog.md) | what is left, ranked |
 | [docs/SUMMARY.md](docs/SUMMARY.md) | what was built, what passes, what is still open |
+| [docs/extras.md](docs/extras.md) | what this implementation does better than the baseline, measured: speed, memory, determinism, diagnostics, testing and the three hosts |
 | [docs/upstream-reports.md](docs/upstream-reports.md) | the document for the upstream authors: what this proves, everything it found in their code and data, and what only they can decide. Seven of the findings are written up as bug reports, each with the command that reproduces it there |
 | [docs/READING-GUIDE.md](docs/READING-GUIDE.md) | the ordered path through everything above, for somebody reading this repository end to end |
 | [docs/glossary.md](docs/glossary.md) | every project term a reader meets, one sentence each, with a pointer to where it is defined properly |
