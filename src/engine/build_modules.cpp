@@ -614,7 +614,7 @@ std::optional<sim::Modules> build_modules(const LoadedInputs &loaded,
         loaded.inputs->run().comorbidities);
     modules.analysis->set_income_analysis_enabled(loaded.inputs->income_analysis_enabled());
     modules.analysis->set_substitutes_impossible_values(
-        config.baseline_compat.is_set(api::CompatFlag::b30));
+        config.baseline_compat.is_set(api::CompatFlag::p10));
     modules.analysis->set_assigned_attributes(assigned);
 
     if (report.error_count() != before) {

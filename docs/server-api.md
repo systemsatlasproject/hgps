@@ -96,7 +96,7 @@ notification.
   "build_type": "Release",
   "api_version": 1,
   "baseline_compat_flags": [
-    { "name": "B-24", "description": "the food-labelling policy offers its impact again, …" }
+    { "name": "P-04", "description": "the food-labelling policy offers its impact again, …" }
   ]
 }
 ```
@@ -235,7 +235,7 @@ Starts a run. Returns at once, with an id; the run happens on the server's own t
 {
   "example": "HLM_France",
   "threads": 1,
-  "baseline_compat": ["B-24"],
+  "baseline_compat": ["P-04"],
   "write_manifest": true
 }
 ```

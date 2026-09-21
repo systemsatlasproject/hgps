@@ -234,7 +234,7 @@ It was checked rather than assumed: `scripts/check.sh --no-equivalence` at **666
 all four presets**, and then committed as it stood (`feat(model): population impact fraction, and the
 two examples that cannot use it`). **Nothing was discarded.** The only changes made to it afterwards
 were documentary — restructuring `docs/examples.md` around a "Does not run — upstream data defect"
-heading, and correcting one code comment that cited deviation B-28 where it meant D-04.
+heading, and correcting one code comment that cited deviation P-08 where it meant P-11.
 
 `.github/workflows/ci.yml` was also already present and committed, from the previous session.
 

@@ -91,7 +91,7 @@ the baseline runs its two scenarios on two threads and this one runs them in seq
 ([docs/performance.md](performance.md)).
 
 It is compared against the baseline at **one hundredth of that cohort**
-([docs/equivalence.md](equivalence.md)), and the comparison finds one thing: deviation **B-24**, the
+([docs/equivalence.md](equivalence.md)), and the comparison finds one thing: deviation **P-04**, the
 baseline's double-applied food-labelling impact, which this example is the only one to expose because
 it is the only one shipping an active intervention.
 
@@ -369,7 +369,7 @@ error … chronickidneydisease …          this data store has no population im
 It selects fifteen diseases and `risk_factor: "Smoking"`; three of them have `Alcohol` and `Joint`
 tables but no `Smoking` one, and a fourth has no fractions at all. **Upstream applies the policy to the
 other eleven and says nothing** — its warning prints only when the run is verbose, which it is not by
-default. That is deviation **B-26**, and it is the clearest example of why a missing table is an error
+default. That is deviation **P-06**, and it is the clearest example of why a missing table is an error
 here: a run that was asked for a policy and applied it to eleven of fifteen diseases produces numbers
 nobody can tell apart from a correct run.
 
@@ -383,7 +383,7 @@ same India data files. Two of them would also be impractical if they could: the 
 not copies: their Smoking tables differ considerably, maxima of 0.00014 and 0.032 with 150 non-zero
 cells against 2,880. Only `pulmonary` is reachable, because that is what the registry lists, so nothing
 reads the `COPD` one. Finding it is what loosened the registry check from an error to a warning for a
-directory that holds no disease measures (deviation **D-04**) — refusing the whole store over a
+directory that holds no disease measures (deviation **P-11**) — refusing the whole store over a
 directory no run reads was the wrong trade.
 
 ### What KevinHall_India does exercise

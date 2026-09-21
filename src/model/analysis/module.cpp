@@ -23,7 +23,7 @@ void AnalysisModule::initialise_population(RuntimeContext &context) {
 
     // The mean modelled disability weight per age and sex, as a fixed-order reduction. The
     // baseline accumulates it into a shared table under a mutex, inside a parallel loop, having
-    // first built a separate is_active vector in another parallel loop (audit N-7).
+    // first built a separate is_active vector in another parallel loop (audit N-07).
     struct Accumulator {
         std::map<std::pair<int, core::Gender>, double> sum;
         std::map<std::pair<int, core::Gender>, int> count;
@@ -238,7 +238,7 @@ void AnalysisModule::calculate_historical_statistics(RuntimeContext &context,
                 //
                 // The baseline replaces a NaN with zero here and says nothing
                 // (`analysis_module.cpp:388`), which turns an impossible value into a quietly
-                // wrong mean — and does not look at an infinity at all. B-30 puts that back.
+                // wrong mean — and does not look at an infinity at all. P-10 puts that back.
                 if (substitutes_impossible_values_) {
                     entry.sum->at(person.gender) +=
                         std::isnan(factor_value) ? 0.0 : factor_value;

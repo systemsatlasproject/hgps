@@ -164,7 +164,7 @@ TEST(StaticLinearLoader, TheUpstreamFinchStaticModelLoads) {
 
 TEST(StaticLinearLoader, TheStaticLinearModelDoesNotConsultTheActiveScenario) {
     // The other half of the FINCH surface, and the other half of the reason a config selecting an
-    // intervention there is refused at load time (ADR 0035, deviation B-25). This model's own policy
+    // intervention there is refused at load time (ADR 0035, deviation P-05). This model's own policy
     // mechanism is `modelling.policy_start_year` and the S1 coefficients, which is a different thing
     // and does work.
     const auto config = finch_config();
@@ -191,7 +191,7 @@ TEST(StaticLinearLoader, ThePolicyEnergyIntakeRowIsCanonicalisedToADerivedPredic
 }
 
 TEST(StaticLinearLoader, TheModelFileDecidesWhetherTheFirstStageRuns) {
-    // Deviation B-23. The FINCH config sets two_stage.use_logistic false and the model ships a
+    // Deviation P-03. The FINCH config sets two_stage.use_logistic false and the model ships a
     // logistic regression; the pack is fitted to the behaviour with the first step on, and the
     // baseline reads the file and ignores the flag. The file wins here too — and says so.
     auto config = finch_config();

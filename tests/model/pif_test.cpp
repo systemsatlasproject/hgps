@@ -90,7 +90,7 @@ TEST(PifTable, AHoleInsideTheRangeIsAnErrorRatherThanAZero) {
     //
     // Zero is a meaningful value in these tables — most cells of the real ones are zero — so a hole
     // is indistinguishable from a tabulated zero. Here it is an error naming the first missing
-    // combination (deviation B-26).
+    // combination (deviation P-06).
     std::vector<PifDataRow> sparse{
         PifDataRow{.gender = Gender::male, .age = 25, .years_since_intervention = 5, .value = 0.3},
         PifDataRow{.gender = Gender::female, .age = 30, .years_since_intervention = 3, .value = 0.2},
@@ -121,7 +121,7 @@ TEST(PifTable, ADuplicateCellIsAnErrorNamingBoth) {
 TEST(PifTable, AValueOutsideTheUnitIntervalIsAnErrorRatherThanAClamp) {
     // Upstream clamps and warns. A fraction above one makes an incidence probability negative and one
     // below zero makes a policy cause disease; neither is a number this program can act on, and the
-    // real data is in [0, 0.159], so refusing costs nothing that exists (deviation B-26).
+    // real data is in [0, 0.159], so refusing costs nothing that exists (deviation P-06).
     for (const double bad : {1.5, -0.1}) {
         auto rows = complete(0, 2, 1);
         rows.front().value = bad;

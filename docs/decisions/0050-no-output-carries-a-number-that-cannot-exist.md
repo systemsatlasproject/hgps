@@ -5,7 +5,7 @@
 Accepted, 2026-09-19. Complements
 [ADR 0049](0049-the-energy-balance-is-integrated-only-where-it-is-defined.md): that one fixes the
 defect this run found, this one is the reason the *next* one cannot ship silently. Creates
-deviation **B-30** under [ADR 0041](0041-deliberate-deviations-are-switchable.md).
+deviation **P-10** under [ADR 0041](0041-deliberate-deviations-are-switchable.md).
 
 ## Context
 
@@ -72,7 +72,7 @@ draw.
 **An absent factor is not an impossible value.** Not every project assigns every declared factor,
 and a factor nobody has contributes nothing to the sum — which is what it has always done.
 
-**It is switchable: `--baseline-compat B-30`.** With the flag on, a `NaN` becomes a zero and the
+**It is switchable: `--baseline-compat P-10`.** With the flag on, a `NaN` becomes a zero and the
 run carries on, exactly as the baseline does, so the difference the guard makes is measurable
 rather than asserted.
 
@@ -103,7 +103,7 @@ machine that would have measured it was running two five-hundred-seed censuses a
 
 ## Consequences
 
-- `docs/deviations.md` gains **B-30**, with its flag.
+- `docs/deviations.md` gains **P-10**, with its flag.
 - [docs/upstream-reports.md](../upstream-reports.md) gains report 7, because the substitution is
   still there in the baseline and a guard in a reimplementation does nothing for anybody running
   it.

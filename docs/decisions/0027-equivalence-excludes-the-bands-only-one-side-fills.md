@@ -25,7 +25,7 @@ the baseline's band counts and 220 of this build's fall short of the projection 
 one of them* is a band whose head count is exactly zero. No band anywhere exceeds the projection.
 The affected ages are 93–100, where the projection puts between 0 and 8 people. So the bands in
 which the two implementations can disagree about the cohort are exactly the bands that empty. It is
-a baseline defect, recorded as B-21 in [docs/deviations.md](../deviations.md).
+a baseline defect, recorded as P-01 in [docs/deviations.md](../deviations.md).
 
 **The second is about the test.** Excluding those bands took the 54 failures to 7, all in one year,
 all standard-deviation or tail-percentile comparisons. Their per-seed values explain them: the
@@ -55,7 +55,7 @@ value, at the same family-wide significance the 4.5σ limit encodes (α = 0.05 o
 p < 10⁻⁵). The mean and the median are still compared as before.
 
 **3. A variable the baseline emits and never fills is not compared at all**, and is named with the
-deviation that records why. `std_income` is the only one (B-22). The exclusion applies **only while
+deviation that records why. `std_income` is the only one (P-02). The exclusion applies **only while
 the baseline's series is identically zero**; a baseline that starts filling the column is compared
 normally, and fails if it disagrees.
 

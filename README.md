@@ -17,7 +17,7 @@ An audit of the upstream baseline, its data and examples, and an earlier rewrite
 defects in the baseline, six of them high severity, and a rewrite that fixed twelve of them while
 deleting the 471-test suite that was the only evidence any of it was correct. Nine more baseline
 defects were found here, by running code the baseline's own tests never reach; they are in
-[docs/deviations.md](docs/deviations.md) as B-21 to B-24 and B-26 to B-30.
+[docs/deviations.md](docs/deviations.md) as P-01 to P-04 and P-06 to P-10.
 
 The one requirement that shapes everything here follows from what the model is for. The whole point
 of a run is the difference between two futures, and attributing that difference to a policy means
@@ -81,8 +81,7 @@ open beside it.
 | [docs/test-port-map.md](docs/test-port-map.md) | where each of the baseline's 471 tests went, suite by suite |
 | [docs/backlog.md](docs/backlog.md) | what is left, ranked |
 | [docs/SUMMARY.md](docs/SUMMARY.md) | what was built, what passes, what is still open |
-| [docs/briefing.md](docs/briefing.md) | the short form for the upstream authors: what this proves, what it found in the baseline, and what only they can decide |
-| [docs/upstream-reports.md](docs/upstream-reports.md) | seven findings written up as bug reports against the baseline, each with the command that reproduces it there |
+| [docs/upstream-reports.md](docs/upstream-reports.md) | the document for the upstream authors: what this proves, everything it found in their code and data, and what only they can decide. Seven of the findings are written up as bug reports, each with the command that reproduces it there |
 | [docs/READING-GUIDE.md](docs/READING-GUIDE.md) | the ordered path through everything above, for somebody reading this repository end to end |
 | [docs/glossary.md](docs/glossary.md) | every project term a reader meets, one sentence each, with a pointer to where it is defined properly |
 
@@ -238,5 +237,5 @@ Validation has two layers ([ADR 0006](docs/decisions/0006-validation-strategy.md
 
 Bit-exact agreement with the baseline is deliberately **not** a goal: it would require reproducing
 several of the audit's confirmed defects on purpose. One of them is now visible in the numbers —
-the `HLM_India` comparison measures deviation B-24, the baseline's double-applied food-labelling
+the `HLM_India` comparison measures deviation P-04, the baseline's double-applied food-labelling
 impact, at about +0.2% of mean BMI in the intervention scenario.

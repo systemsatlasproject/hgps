@@ -89,7 +89,7 @@ three times too large and classify the series wrongly.
 
 **The emptying-band exclusion is taken from the whole-population file and applied to every family.**
 A band is excluded because immigration cannot refill it once it empties, so the two
-implementations' *cohorts* disagree there (§3.1, deviation B-21). That is a property of the
+implementations' *cohorts* disagree there (§3.1, deviation P-01). That is a property of the
 population band. A stratum band being empty is a different thing entirely — it is a real split of a
 band both sides agree about — and excluding those would drop the stratified output of every band
 nobody happens to be in, which on the two HLM examples, where nobody has an income category at all,
@@ -121,7 +121,7 @@ When immigration has to add somebody to an (age, sex) band, both implementations
 already in that band. When the band is **empty** there is nobody to clone, so the immigration target
 for that band is abandoned and the cohort falls short of the demographic projection it is calibrated
 to. That is the baseline's rule, kept here deliberately — inventing a donor from a neighbouring age
-would change the age distribution — and recorded as deviation **B-21**.
+would change the age distribution — and recorded as deviation **P-01**.
 
 It is the one place the two implementations are not reporting the same quantity, so the bands that
 **either** implementation empties, in **any** seed, are excluded from the reduction **on both
@@ -140,7 +140,7 @@ Three properties keep this from being a licence:
 `std_income`, on the FINCH surface only. The baseline emits the column and never fills it: the loop
 that accumulates squared deviations skips `income` on the ground that the mapping loop handles it,
 and the mapping loop skips it for the same reason, so every value is exactly zero in every band of
-every year of every run (deviation **B-22**). This build computes it. There is no number on one side,
+every year of every run (deviation **P-02**). This build computes it. There is no number on one side,
 so comparing it would fail for ever and say nothing.
 
 The exclusion is conditional, which is the part that matters: the harness drops the variable **only
@@ -169,7 +169,7 @@ the same one in each case, stated once here:
 > measurement. An exclusion is right when **one side has nothing to compare** — then there is no
 > difference to measure, only an absence, and a flag would have nothing to toggle.
 
-- **§3.1, the emptying bands.** Not a deviation at all in the sense that matters: B-21's rule is
+- **§3.1, the emptying bands.** Not a deviation at all in the sense that matters: P-01's rule is
   *kept*, so both implementations do the same thing, and what differs is which bands happen to empty
   under different random streams. There is no behaviour to switch. An empty band has no
   count-weighted mean, so there is nothing on either side. **Keep.**
@@ -195,7 +195,7 @@ neither a flag nor an exclusion fits: the baseline had numbers and this build ha
 nothing was comparing. The answer there is to compute the column, and the reason it took a run to
 find is that an absence in a file nobody reads looks exactly like agreement.
 
-The distinction is not a formality. **B-24** — the deviation that prompted ADR 0041 — was on the
+The distinction is not a formality. **P-04** — the deviation that prompted ADR 0041 — was on the
 other side of it: two implementations computing a real mean BMI and disagreeing on purpose, with
 nothing excluded, which is why it showed up as 28 out-of-tolerance comparisons that a person had to
 attribute by hand. That is the case a flag is for.
@@ -213,7 +213,7 @@ One consequence is worth stating because it bit on the first attempt: **the excl
 and a flag changes which bands empty. So a stored reference is tied to the flag setting it was
 written with, and the check in §3.1 catches the mismatch and refuses rather than comparing against
 the wrong reduction — which is what it did, on `HLM_India` with `food_labelling` active, the one
-example where B-24 reaches the numbers. The reference was refreshed. On the examples where no
+example where P-04 reaches the numbers. The reference was refreshed. On the examples where no
 deviation reaches the run, the set is identical and the existing references were untouched.
 
 ### 3.3 The first simulated year, for quantities not defined in it

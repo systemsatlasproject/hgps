@@ -445,7 +445,7 @@ TEST(KevinHallBehaviour, AYearOfStarvationStopsAtNoBodyFatRatherThanGoingThrough
         const auto config = [unbounded] {
             auto built = finch_config();
             if (unbounded) {
-                built.baseline_compat.set(hgps::api::CompatFlag::b29);
+                built.baseline_compat.set(hgps::api::CompatFlag::p09);
             }
             return built;
         }();
@@ -502,7 +502,7 @@ TEST(KevinHallBehaviour, AYearOfStarvationStopsAtNoBodyFatRatherThanGoingThrough
     }
 
     {
-        // B-29 on: the baseline's behaviour is back, bug and all.
+        // P-09 on: the baseline's behaviour is back, bug and all.
         auto harness = starve(true);
 
         int negative = 0;

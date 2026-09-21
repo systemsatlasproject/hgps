@@ -33,7 +33,7 @@ Three things came out of the work rather than out of the plan:
 - **The `NaN` that would have hidden it.** Looking for what *should* have caught the first defect
   found a second: the analysis module counts a risk factor that is not a number as **zero** while
   accumulating the year's means, and says nothing; an infinity it does not look at at all. That
-  is deviation B-30 and
+  is deviation P-10 and
   [ADR 0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md), and the invariant
   it replaces is now a property of the engine rather than of one module.
 - **The ninth run's "three-year precursor" is withdrawn.** It was a maximum over a three-person
@@ -56,7 +56,7 @@ it**, and only once somebody has worked out whether that divergence is ours.
 An intervention selected on the `StaticLinear`/`KevinHall` surface has **no effect at all** in the
 baseline, and the run reports success: `Scenario::apply` has exactly one call site in the whole
 upstream tree, in the dynamic hierarchical linear model, and neither `static_linear_model.cpp` nor
-`kevin_hall_model.cpp` calls it (deviation **B-25**). So `KevinHall_FINCH` with `food_labelling`
+`kevin_hall_model.cpp` calls it (deviation **P-05**). So `KevinHall_FINCH` with `food_labelling`
 active produces output byte-identical to the same run with `simple` active.
 
 This build **refuses** such a configuration at load time rather than running it silently, with a
@@ -70,7 +70,7 @@ answer — before the balance runs, after it, or to the intake targets. That is 
 with a fitted model behind it, and guessing would put an invented mechanism into somebody else's
 work. Until it is answered, four of the six upstream examples can only be run with `simple`.
 
-See [docs/deviations.md](deviations.md) B-25 and `tests/config/intervention_reach_test.cpp`.
+See [docs/deviations.md](deviations.md) P-05 and `tests/config/intervention_reach_test.cpp`.
 
 ### 2. `HLM_India` at the cohort it ships — `validation`
 
@@ -157,7 +157,7 @@ Until then the FINCH surface has one country, and that is the largest single gap
 
 **Value: low-medium. Effort: low.** When an age-sex band is empty there is nobody to clone an
 immigrant from, so both implementations skip it and the cohort falls short of the demographic
-projection by a few people. It is recorded as **B-21**, reported per year as
+projection by a few people. It is recorded as **P-01**, reported per year as
 `ImmigrationShortfallPeople` and `ImmigrationShortfallBands`, and it is the mechanism behind the
 equivalence harness's one exclusion rule.
 
@@ -287,7 +287,7 @@ otherwise strands them. The first row is this run's; the rest are the ninth's.
 
 | Was | | |
 |---|---|---|
-| **2** | The energy balance diverges on one seed in two hundred | done, and the answer is that it is **not ours**. `p = C / (C + F)` has a pole at **F = −2.001 kg**, neither implementation floors body fat between years, and the baseline's own statements produce the same `-1.7019180456941172e+283` on the state this build traced. Five hundred seeds of each: a body fat mass goes below zero on **4 of 500** here and the run dies on **1**; the baseline refuses **0 of 500**, but that is its cohorts rather than its arithmetic, and on three of the four the unguarded run *completes and writes the person out*, which is the case that reaches a results file. The fix is a bounded guard rather than a bug fix and so carries flag **B-29** ([ADR 0049](decisions/0049-the-energy-balance-is-integrated-only-where-it-is-defined.md)); 496 of the 499 seeds that complete both ways are **byte-identical**, and seeds 1–20 of all three examples are byte-identical to the binary that predates it. Two upstream reports came out of it — the pole, and the `NaN`-to-zero substitution in `analysis_module.cpp` that would have hidden it ([docs/findings/seed-80.md](findings/seed-80.md)). **And the ninth run's "three-year precursor" is withdrawn**: it was a three-person band of 96-year-olds in the intervention arm, and it happens on seeds that never diverge |
+| **2** | The energy balance diverges on one seed in two hundred | done, and the answer is that it is **not ours**. `p = C / (C + F)` has a pole at **F = −2.001 kg**, neither implementation floors body fat between years, and the baseline's own statements produce the same `-1.7019180456941172e+283` on the state this build traced. Five hundred seeds of each: a body fat mass goes below zero on **4 of 500** here and the run dies on **1**; the baseline refuses **0 of 500**, but that is its cohorts rather than its arithmetic, and on three of the four the unguarded run *completes and writes the person out*, which is the case that reaches a results file. The fix is a bounded guard rather than a bug fix and so carries flag **P-09** ([ADR 0049](decisions/0049-the-energy-balance-is-integrated-only-where-it-is-defined.md)); 496 of the 499 seeds that complete both ways are **byte-identical**, and seeds 1–20 of all three examples are byte-identical to the binary that predates it. Two upstream reports came out of it — the pole, and the `NaN`-to-zero substitution in `analysis_module.cpp` that would have hidden it ([docs/findings/seed-80.md](findings/seed-80.md)). **And the ninth run's "three-year precursor" is withdrawn**: it was a three-person band of 96-year-olds in the intervention arm, and it happens on seeds that never diverge |
 | **6** | The comparison's allowance is estimated from the draws it is judging | done, and the two things the item warned about were both answered rather than assumed. The allowance is gone: the rule is a family-wise false-positive rate of **1%** over every test a run performs, controlled by Holm, with Welch's t for location, Brown–Forsythe for spread and the existing exact test for a lattice ([ADR 0048](decisions/0048-a-comparison-with-a-stated-false-positive-rate.md)). It was **calibrated on a null before adoption** — 30 pairs of twenty seeds across all three runnable examples, 922,564 tests, 0 failures against 0.30 expected — and the calibration is a CTest test at reduced scale. The **failure budget is gone from every example**, and the harness has no flag that could grant one. And the item's own warning not to hide the `std_polyunsaturatedfattyacid` offset was honoured the other way round: 200 seeds of both implementations say **the offset is not real**, at +0.135% rather than −1.1%, with nothing significant ([docs/equivalence.md](equivalence.md)) |
 | **2** | The weight-category columns are counts and both reductions treat them as means | done, and it was **not** a deviation from the baseline: the baseline emits head counts and so does this build, so the defect was in this project's own two reductions and in the income series that never filled the four columns at all. No compatibility flag — ADR 0041's flag is for a deliberate difference from the baseline, and there was none here. All four stored references regenerated against the baseline binary ([docs/equivalence.md](equivalence.md)) |
 | **9** | `DataSeries` keyed by channel name | done; the analysis module resolves its channels once a year instead of per person per year, byte-identical on `HLM_France` and `KevinHall_FINCH`, and on `HLM_India` at the cohort it ships ([docs/performance.md](performance.md)) |

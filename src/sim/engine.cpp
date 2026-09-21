@@ -255,7 +255,7 @@ void Engine::apply_net_migration(const MigrationEntry &migration) {
                 // Immigrants are modelled on people already here of the same age and sex. The
                 // candidate list is built by walking the population in slot order — the baseline
                 // gathers it from parallel tasks under a mutex and then sorts it, which is the
-                // same list by a longer route (audit N-8).
+                // same list by a longer route (audit N-08).
                 std::vector<std::size_t> candidates;
                 for (std::size_t index = 0; index < population.size(); ++index) {
                     const auto &person = population[index];
@@ -268,7 +268,7 @@ void Engine::apply_net_migration(const MigrationEntry &migration) {
                 if (candidates.empty()) {
                     // Nobody of this age and sex to model an immigrant on, so the cohort falls
                     // short of the demographic projection it is otherwise pinned to. The baseline
-                    // does the same and says nothing (deviation B-21); this at least reports it,
+                    // does the same and says nothing (deviation P-01); this at least reports it,
                     // so a run's own metrics say how many people it is short and in how many
                     // bands rather than leaving it to be discovered by comparison.
                     context_.metrics()["ImmigrationShortfallPeople"] += static_cast<double>(net);

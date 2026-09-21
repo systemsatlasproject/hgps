@@ -29,7 +29,7 @@ using EthnicityPrevalence =
 ///
 ///  - the residual-mortality reduction over the population uses
 ///    `core::parallel::reduce_ordered`, so its result does not depend on the thread count. The
-///    baseline accumulates into a shared table under a mutex (audit N-7), and the earlier rewrite
+///    baseline accumulates into a shared table under a mutex (audit N-07), and the earlier rewrite
 ///    left this one site parallel after removing the pattern elsewhere (finding R-04);
 ///  - region and ethnicity are drawn through `rng::Categorical`, which can only be built from an
 ///    ordered sequence (determinism clause D4);

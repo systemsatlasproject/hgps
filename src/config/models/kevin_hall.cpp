@@ -129,7 +129,7 @@ std::optional<std::vector<double>> read_quantiles(const FileBlock &file, const s
     return values;
 }
 
-/// @brief `QuintileN` -> N-1, or nullopt.
+/// @brief `QuintileN` -> N-01, or nullopt.
 std::optional<std::size_t> quintile_index(const std::string &key) {
     constexpr std::string_view prefix = "Quintile";
     if (!key.starts_with(prefix)) {
@@ -539,12 +539,12 @@ std::unique_ptr<model::RiskFactorModel> load_kevin_hall(const nlohmann::json &do
         }
     }
 
-    // B-29: with the flag on, the energy balance integrates past a non-positive body fat exactly
+    // P-09: with the flag on, the energy balance integrates past a non-positive body fat exactly
     // as the baseline does, so what the guard is worth can be measured rather than argued
     // (ADR 0041, ADR 0049).
     parameters->unbounded_body_fat =
         context.config != nullptr &&
-        context.config->baseline_compat.is_set(api::CompatFlag::b29);
+        context.config->baseline_compat.is_set(api::CompatFlag::p09);
 
     if (report.error_count() != before) {
         return nullptr;

@@ -10,7 +10,7 @@ The baseline parallelises about twenty population sweeps with oneTBB. The domina
 *accumulate into a shared table under one `std::mutex`*, e.g.
 `default_disease_model.cpp:68-70`. This is free of data races and **not** order-stable: floating-point
 addition is not associative, so the accumulated sums can differ in their last bits between runs
-(audit N-7). In `default_disease_model.cpp` those sums become `average_relative_risk`, which divides
+(audit N-07). In `default_disease_model.cpp` those sums become `average_relative_risk`, which divides
 into a probability that is compared against a random hazard — so a last-bit difference can in
 principle flip a person's disease outcome.
 
@@ -39,7 +39,7 @@ So the baseline's threading costs a determinism hazard and buys nothing measurab
 
 ## Alternatives
 
-- **Keep oneTBB and its mutex pattern.** Inherits N-7 and depends on a large library for a
+- **Keep oneTBB and its mutex pattern.** Inherits N-07 and depends on a large library for a
   measured 5% slowdown.
 - **Fully sequential, no parallel helpers at all.** Tempting given the measurements. Rejected
   because the analysis module's per-person statistics are genuinely independent, and a deterministic

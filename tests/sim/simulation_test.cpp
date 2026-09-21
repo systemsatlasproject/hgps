@@ -315,7 +315,7 @@ TEST_P(TestSimulation, ThePopulationAgesAndPeopleDieAndAreBorn) {
 }
 
 TEST_P(TestSimulation, TheImmigrationShortfallIsReported) {
-    // Deviation B-21. Immigration into an (age, sex) band clones somebody already in it, so an
+    // Deviation P-01. Immigration into an (age, sex) band clones somebody already in it, so an
     // empty band cannot be filled and the cohort falls short of the demographic projection. The
     // baseline does the same and says nothing; here every year's metrics carry the shortfall, so
     // a run reports its own divergence from the projection instead of leaving it to be found by

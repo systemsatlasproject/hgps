@@ -28,18 +28,18 @@ namespace hgps::api {
 ///        docs/deviations.md, so a flag in a config or a manifest leads straight to the entry
 ///        explaining what it restores.
 enum class CompatFlag : std::uint8_t {
-    /// @brief B-24: the food-labelling policy re-applies its impact to somebody who failed an
+    /// @brief P-04: the food-labelling policy re-applies its impact to somebody who failed an
     ///        early coverage draw and passed a later one.
-    b24 = 0,
+    p04 = 0,
 
-    /// @brief B-29: the energy balance integrates a body fat mass straight through zero and past
+    /// @brief P-09: the energy balance integrates a body fat mass straight through zero and past
     ///        the partition coefficient's pole, instead of stopping at the edge of the model's
     ///        domain (docs/findings/seed-80.md).
-    b29 = 1,
+    p09 = 1,
 
-    /// @brief B-30: a risk factor that is not a number is silently counted as zero when the
+    /// @brief P-10: a risk factor that is not a number is silently counted as zero when the
     ///        year's means are accumulated, so the mean is wrong and nothing says so.
-    b30 = 2,
+    p10 = 2,
 };
 
 /// @brief A set of compatibility flags. Default-constructed means "none" — the fixed behaviour.
@@ -73,7 +73,7 @@ class BaselineCompat {
     BaselineCompat &merge(const BaselineCompat &other) noexcept;
 
     /// @brief The flag a name denotes, or nullopt. Matching ignores case and treats `-` and `_`
-    ///        as absent, so "B-24", "b24" and "B_24" are the same flag.
+    ///        as absent, so "P-04", "p04" and "P_04" are the same flag.
     static std::optional<CompatFlag> from_name(std::string_view name);
 
     /// @brief `from_name`, extended with "all" — the whole set, whatever it grows to contain.

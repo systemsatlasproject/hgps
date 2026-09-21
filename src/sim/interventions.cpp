@@ -303,7 +303,7 @@ double PhysicalActivityScenario::impact_for(rng::RandomSource &random, model::Pe
 FoodLabellingScenario::FoodLabellingScenario(config::InterventionSpec definition,
                                              api::BaselineCompat compat)
     : BandedInterventionScenario{std::move(definition), 1},
-      b24_retry_{compat.is_set(api::CompatFlag::b24)} {
+      b24_retry_{compat.is_set(api::CompatFlag::p04)} {
     const auto &spec = this->definition();
 
     if (spec.coverage_rates.size() != 2) {
@@ -363,7 +363,7 @@ double FoodLabellingScenario::impact_for(rng::RandomSource &random, model::Perso
     // not noticed it yet is offered it again every year; after the window closes, everyone has
     // been decided one way or the other and nobody is reconsidered.
     //
-    // One difference from the baseline, recorded as B-24 and switchable by `b24_retry_`: when
+    // One difference from the baseline, recorded as P-04 and switchable by `b24_retry_`: when
     // the draw succeeds the baseline marks the person with `try_emplace`, which does nothing if
     // they are already marked as unaffected — so somebody who failed an early draw and passed a
     // later one keeps their "unaffected" mark and is offered the impact again, and again, every
@@ -397,7 +397,7 @@ double FoodLabellingScenario::impact_for(rng::RandomSource &random, model::Perso
         return value;
     }
 
-    // B-24. `try_emplace` leaves an existing kNoEffect mark in place, so the person is offered
+    // P-04. `try_emplace` leaves an existing kNoEffect mark in place, so the person is offered
     // the impact again next year — the baseline's behaviour, bug and all. `insert_or_assign`
     // records that they have now been affected, which is this build's.
     if (b24_retry_) {

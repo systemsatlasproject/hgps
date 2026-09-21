@@ -144,7 +144,7 @@ std::string population_impact_fraction_csv(const FixturePackSpec &spec, double p
     std::string csv = "Gender,Age,YearPostInt,IF_Mean\n";
     for (int year = 0; year < years; ++year) {
         // 0 is male and 1 is female, which is what the data and the baseline's loader say — its own
-        // schema says the opposite and is wrong (docs/deviations.md B-27).
+        // schema says the opposite and is wrong (docs/deviations.md P-07).
         for (int sex = 0; sex <= 1; ++sex) {
             for (int age = 0; age <= static_cast<int>(spec.max_age); ++age) {
                 const auto ramp = static_cast<double>(year + 1) / static_cast<double>(years);

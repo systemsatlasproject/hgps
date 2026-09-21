@@ -41,7 +41,7 @@ class RandomSource final {
     /// Built from 53 random bits explicitly: (bits >> 11) * 2^-53. The upper bound is unreachable
     /// by construction, so nothing downstream has to defend against an exact 1.0. The baseline
     /// used std::generate_canonical, which is specified but has a history of returning 1.0 on some
-    /// implementations (LWG 2524, audit N-5) — and its integer sampler would then return
+    /// implementations (LWG 2524, audit N-05) — and its integer sampler would then return
     /// max + 1.
     double next_double();
 

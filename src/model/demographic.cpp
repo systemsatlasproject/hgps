@@ -353,7 +353,7 @@ DemographicModule::calculate_residual_mortality(RuntimeContext &context,
     const auto &population = context.population();
 
     // The reduction the baseline does with a mutex-guarded `+=` inside a parallel loop, which is
-    // race-free but not order-stable (audit N-7). Here each block accumulates in index order and
+    // race-free but not order-stable (audit N-07). Here each block accumulates in index order and
     // the partials combine in block order, so the sums are identical at any thread count
     // (determinism clause D5). The map function is a pure function of one person and draws
     // nothing, which is what makes it eligible to run in a parallel region at all (D3).

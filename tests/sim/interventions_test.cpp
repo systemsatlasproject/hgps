@@ -450,7 +450,7 @@ TEST(FoodLabellingScenario, SomebodyNotSeenUntilAfterTheWindowIsStillOfferedIt) 
 }
 
 TEST(FoodLabellingScenario, APersonAffectedInTheWindowIsNotAffectedAgainInIt) {
-    // Deviation B-24: the baseline marks them with try_emplace, which does nothing when they are
+    // Deviation P-04: the baseline marks them with try_emplace, which does nothing when they are
     // already marked unaffected, so it can apply the impact to the same person every remaining
     // year of the window.
     auto spec = food_labelling_spec();
@@ -467,7 +467,7 @@ TEST(FoodLabellingScenario, APersonAffectedInTheWindowIsNotAffectedAgainInIt) {
 }
 
 TEST(FoodLabellingScenario, WithTheB24FlagOnTheBaselineDefectIsBackAndMeasurable) {
-    // B-24 with the compatibility flag on: somebody who fails an early coverage draw keeps their
+    // P-04 with the compatibility flag on: somebody who fails an early coverage draw keeps their
     // "unaffected" mark even after a later draw succeeds, so the policy offers them the impact
     // again every remaining year of the window (ADR 0041).
     //
@@ -498,7 +498,7 @@ TEST(FoodLabellingScenario, WithTheB24FlagOnTheBaselineDefectIsBackAndMeasurable
 
     const auto fixed = affected_counts(hgps::api::BaselineCompat{});
     hgps::api::BaselineCompat compat;
-    compat.set(hgps::api::CompatFlag::b24);
+    compat.set(hgps::api::CompatFlag::p04);
     const auto baseline_behaviour = affected_counts(compat);
 
     // Fixed: nobody is ever affected more than once.
@@ -520,7 +520,7 @@ TEST(FoodLabellingScenario, WithTheB24FlagOnTheBaselineDefectIsBackAndMeasurable
 TEST(FoodLabellingScenario, TheB24FlagChangesNothingWhenNobodyEverFailsADraw) {
     // The flag restores a defect that needs a *previous* failed draw. At a coverage rate of one
     // nobody fails one, so the two behaviours must be identical — which is why the deviation is
-    // worth exactly zero in a policy's first year (docs/deviations.md, B-24).
+    // worth exactly zero in a policy's first year (docs/deviations.md, P-04).
     const auto run = [](hgps::api::BaselineCompat compat) {
         auto spec = food_labelling_spec();
         spec.coverage_rates = {1.0, 1.0};
@@ -537,19 +537,19 @@ TEST(FoodLabellingScenario, TheB24FlagChangesNothingWhenNobodyEverFailsADraw) {
     };
 
     hgps::api::BaselineCompat compat;
-    compat.set(hgps::api::CompatFlag::b24);
+    compat.set(hgps::api::CompatFlag::p04);
     EXPECT_EQ(run(hgps::api::BaselineCompat{}), run(compat));
 }
 
 TEST(FoodLabellingScenario, AFlagForADifferentDeviationDoesNotChangeThisOne) {
-    // `all` is what the equivalence harness passes. It must mean "B-24 on" here and not something
+    // `all` is what the equivalence harness passes. It must mean "P-04 on" here and not something
     // broader, so that adding a second flag later cannot silently change this policy.
     auto spec = food_labelling_spec();
     spec.coverage_rates = {1.0, 1.0};
 
     auto with_all = create_intervention_scenario(spec, hgps::api::BaselineCompat::all());
     hgps::api::BaselineCompat only_b24;
-    only_b24.set(hgps::api::CompatFlag::b24);
+    only_b24.set(hgps::api::CompatFlag::p04);
     auto with_b24 = create_intervention_scenario(spec, only_b24);
 
     auto left = source();

@@ -1,6 +1,6 @@
 // New here. Determinism contract clauses D3 and D5
 // (docs/decisions/0026-parallelism-and-fixed-order-reductions.md). The baseline accumulates into
-// a shared table under a mutex, which is race-free but order-variable (audit N-7); this checks
+// a shared table under a mutex, which is race-free but order-variable (audit N-07); this checks
 // that the replacement is bit-identical at any thread count.
 #include "core/parallel.h"
 

@@ -1,28 +1,6 @@
 # Reading guide
 
-For somebody who is going to **own** this code, reading it end to end for the first time.
-
-The order below is the one that costs the least backtracking: what the project claims, then what it
-found, then how the claims are tested, then how it is built, then the code. Each entry says what
-the thing is, why it exists, roughly how long it takes, and the one question you should be able to
-answer when you put it down. If you cannot answer that question after reading it, the document is
-at fault and the gap is worth an issue.
-
-**The whole path is about two and a half days of reading** — roughly six hours of documents, a day
-on the fifty decision records, and a day on 30,000 lines of C++. It is written to be taken in
-order, but the four stopping points below are real: each is a place where you know enough to be
-useful.
-
-| If you have | Read | You will be able to |
-|---|---|---|
-| **20 minutes** | [briefing](#1-docsbriefingmd), then *State of the project* at the top of [SUMMARY](#2-docssummarymd) | say what this is, what it proves, and what is blocked on somebody else |
-| **half a day** | items 1–5 | defend or attack any number this project quotes |
-| **two days** | items 1–9 | change the model code without breaking the comparison |
-| **everything** | items 1–14 | own it |
-
-Nothing here is a substitute for `scripts/check.sh`. Run it once, early, on a machine with
-`VCPKG_ROOT` set: it is the fastest way to find out whether the tree in front of you is the tree
-these documents describe. `--fast` is the release preset alone and its tests are a minute; the full
+Nothing here is a substitute for `scripts/check.sh`. Run it once, early, on a machine with `VCPKG_ROOT` set: it is the fastest way to find out whether the tree in front of you is the tree these documents describe. `--fast` is the release preset alone and its tests are a minute; the full
 run is the long one, because the four presets are 54, 511, 1,620 and 972 seconds of tests before
 the frontend, the browser and the equivalence harness ([docs/SUMMARY.md](SUMMARY.md), *The same
 tree locally*).
@@ -31,20 +9,17 @@ tree locally*).
 
 ## Part one — the claims and the findings
 
-### 1. [docs/briefing.md](briefing.md)
+### 1. [docs/upstream-reports.md](upstream-reports.md)
 
-**What it is.** The note written for the upstream Health-GPS authors: what a second implementation
-proved, what it found in the baseline, and the two questions only they can answer.
+**What it is.** Document for upstream Health-GPS authors: what a second
+implementation proved, everything it found in their code and their example data, and the two questions only they can answer.
 
-**Why it exists.** Everything else here is addressed to a maintainer of *this* repository. This one
-is addressed to the people who own the model, and it is therefore the only document that states the
-project's purpose without assuming you accept its premises.
+**What to read.** First four sections are the short form. Reports 1, 6 and 7 are the ones that matter most.
 
-**How long.** Ten minutes. The briefing is deliberately short, and is capped at a quarter of
-[docs/SUMMARY.md](SUMMARY.md) by word count.
-
-**The question.** *Why does a second implementation of an existing simulation exist at all, and
-what has it produced that the first one could not?*
+Read [docs/findings/seed-80.md](findings/seed-80.md) straight after this one — the full trace of
+report 6, term by term, including the point at which the baseline's own statements
+compiled alone return the same impossible number to fifteen significant figures. It is the single
+best worked example of how a finding is established in this project.
 
 ### 2. [docs/SUMMARY.md](SUMMARY.md)
 
@@ -56,9 +31,8 @@ with the state of the project at the top. Previous runs' summaries are in
 findings, and the census of 1,500 runs. When a number is quoted anywhere else in this repository,
 this is usually where it came from.
 
-**How long.** Thirty minutes, and read the tables rather than skimming them — the census table and
-the *What a reader should still be sceptical about* list are the two places the project argues
-against itself.
+**What to read.** The tables, rather than skimming them — the census table and the *What a reader
+should still be sceptical about* list are the two places the project argues against itself.
 
 **The question.** *What has this build been compared against, how many times, and what did the
 comparison fail to cover?*
@@ -75,36 +49,14 @@ nothing.
 which differences were chosen. Without this file a divergence found by the comparison cannot be
 attributed, and the comparison stops being evidence.
 
-**How long.** Fifteen minutes. Read the flag table at the top properly; the rest is a reference.
+**What to read.** The flag table at the top, properly; the rest is a reference.
 
 **The question.** *When the harness reports a difference, how do I tell a deliberate one from a
 defect?*
 
-### 4. [docs/upstream-reports.md](upstream-reports.md)
-
-**What it is.** Seven findings that belong to whoever owns the baseline and the example data,
-written as bug reports — each with the one command that reproduces it against *their* binary and
-their data, not ours.
-
-**Why it exists.** Five of the seven cannot be fixed here without inventing a number for somebody
-else's fitted model. Two of them this build has guarded against, and they are still reported
-because a guard in a reimplementation does nothing for anybody running the original.
-
-**How long.** Forty minutes. Reports 1, 6 and 7 are the ones that matter most: report 1 blocks two
-of the six upstream examples outright, report 6 is the body-fat pole, and report 7 is the
-`NaN`-counted-as-zero in the analysis module.
-
-**The question.** *Which of this project's open problems are somebody else's to solve, and what
-exactly is being asked of them?*
-
-Read [docs/findings/seed-80.md](findings/seed-80.md) straight after this one — twenty minutes, the
-full trace of report 6, term by term, including the point at which the baseline's own statements
-compiled alone return the same impossible number to fifteen significant figures. It is the single
-best worked example of how a finding is established in this project.
-
 ## Part two — how anything here is known to be true
 
-### 5. [docs/equivalence-method.md](equivalence-method.md)
+### 4. [docs/equivalence-method.md](equivalence-method.md)
 
 **What it is.** The comparison method alone, with no results in it: how a run's CSV files are
 reduced to series, what is left out of the reduction and why, the rule that decides pass or fail,
@@ -115,40 +67,39 @@ project makes rests on a statistical rule. Section 4 is written so that you can 
 without reading the script, and section 3 is the honest list of everything the comparison does not
 look at.
 
-**How long.** Ninety minutes, and it is the densest reading in the repository. Section 4 twice.
+**What to read.** All of it, and it is the densest reading in the repository. Section 4 twice.
 
 **The question.** *What does "the two implementations agree" mean here, precisely — and what is the
 rate at which this rule cries wolf?*
 
 Its companion is [docs/equivalence.md](equivalence.md) (1,473 lines), which is the *results* rather
 than the method. Do not read it end to end on a first pass. Read *Verdict* and the three
-per-example result sections, about forty minutes, and come back to the rest when you need a
-specific number.
+per-example result sections, and come back to the rest when you need a specific number.
 
-Two smaller documents finish the picture and are worth twenty minutes together:
+Two smaller documents finish the picture:
 [docs/examples.md](examples.md), which upstream examples run here and the two that neither
 implementation can run; and [docs/test-port-map.md](test-port-map.md), where each of the baseline's
 471 tests went, suite by suite, including the 34 with no counterpart and why.
 
 ## Part three — how it is built
 
-### 6. [docs/design.md](design.md)
+### 5. [docs/design.md](design.md)
 
 **What it is.** The architecture: the ten modules and their one-way dependencies, the data flow
 through a run, the determinism contract's fourteen clauses, the parallelism model, the diagnostics
 scheme, config v2, the data store, and the I/O formats.
 
-**Why it exists.** The source tree assumes a reader has this map. Reading `src/` without §2 and §4
-of this document costs about a day of working out the module boundaries from the code.
+**Why it exists.** The source tree assumes a reader has this map. Without §2 and §4 of this
+document, reading `src/` means working the module boundaries out from the code.
 
-**How long.** An hour. §2 (module layout), §4 (the determinism contract) and §6 (diagnostics) are
-the three that the code will not make sense without; §3, §7, §8 and §9 can be consulted rather than
+**What to read.** §2 (module layout), §4 (the determinism contract) and §6 (diagnostics) are the
+three that the code will not make sense without; §3, §7, §8 and §9 can be consulted rather than
 read.
 
 **The question.** *Why can this program produce byte-identical output at one thread and at sixteen,
 and which mechanism enforces that rather than which convention?*
 
-### 7. [docs/decisions/](decisions) — the fifty ADRs
+### 6. [docs/decisions/](decisions) — the fifty ADRs
 
 **What it is.** One Architecture Decision Record per design choice, each with its context, the
 decision, the alternatives rejected and the consequences. They are numbered in the order they were
@@ -158,9 +109,8 @@ taken and are never rewritten.
 new owner asks most often and the one the code cannot answer. Several of these records exist
 specifically because the decision looks wrong from outside.
 
-**How long.** 38,000 words — most of a day if read end to end, which is worth doing once. If you
-have an hour instead, read 0005, 0008, 0024, 0032, 0041, 0048, 0049 and 0050: those eight carry the
-shape of everything else.
+**What to read.** 38,000 words, worth reading end to end once. Short of that, read 0005, 0008,
+0024, 0032, 0041, 0048, 0049 and 0050: those eight carry the shape of everything else.
 
 **The question.** *For any surprising thing in this codebase, which record argues for it, and what
 was the alternative?*
@@ -249,7 +199,7 @@ in order within each group.
 - [0031 — Each intervention is compared on its own, and FINCH borrows its definitions](decisions/0031-comparing-one-intervention-at-a-time.md)
 - [0048 — The comparison's threshold is a stated false-positive rate, not an allowance](decisions/0048-a-comparison-with-a-stated-false-positive-rate.md)
 
-### 8. [docs/api.md](api.md) and `include/hgps/`
+### 7. [docs/api.md](api.md) and `include/hgps/`
 
 **What it is.** The published C++ API: four calls, the handles they return, the event stream,
 cancellation, the results, the compatibility flags, and what it throws. Six headers,
@@ -260,8 +210,8 @@ this repository is a client of it ([ADR 0032](decisions/0032-library-and-a-thin-
 only one thing before the source, read the six headers: they tell you the shape of a run in about a
 page, and the CLI, the server and the tests all go through them.
 
-**How long.** Thirty minutes for the document, twenty more to read `include/hgps/` itself. The
-minimal host in the document is compiled and run by the test suite, so it cannot have rotted.
+**What to read.** The document, then `include/hgps/` itself. The minimal host in the document is
+compiled and run by the test suite, so it cannot have rotted.
 
 **The question.** *What are the four calls a host makes, and what does each of them own?*
 
@@ -272,23 +222,23 @@ the order `src/` depends on them — nothing depends on anything above it in the
 also the order to read them in. [docs/design.md](design.md) §2 has the same graph drawn.
 
 Read each module's headers first and its `.cpp` files only where the header raises a question. The
-whole of part four is about a day; the three long entries are marked.
+three long entries are marked.
 
 | # | Module | Size | What it is |
 |---:|---|---:|---|
-| 9 | `src/core/` | 25 files, 2,186 lines | the vocabulary: `Identifier`, `DataTable`, the column types, intervals, the matrix and its Cholesky, string and byte helpers |
+| 8 | `src/core/` | 25 files, 2,186 lines | the vocabulary: `Identifier`, `DataTable`, the column types, intervals, the matrix and its Cholesky, string and byte helpers |
 | | `src/diagnostics/` | 6 files, 401 lines | the two tiers — an accumulated, located `Issue` for anything the input got wrong, a thrown `InternalError` for anything this program got wrong |
 | | `src/random/` | 6 files, 500 lines | the seeded generator that has no default constructor, `Categorical<T>`, and the seed policy |
-| 10 | `src/io/` | 12 files, 1,779 lines | CSV, JSON, SHA-256, path handling and process launching. No model knowledge at all |
+| 9 | `src/io/` | 12 files, 1,779 lines | CSV, JSON, SHA-256, path handling and process launching. No model knowledge at all |
 | | `src/config/` | 11 files, 4,912 lines | config v2, its hand-written validator, the v1→v2 converter, and one loader per model family under `models/` |
 | | `src/data/` | 4 files, 1,469 lines | the data index and the content-addressed store the disease data is fetched into |
-| 11 | **`src/model/`** | 56 files, 11,101 lines | **the longest read — half a day on its own.** The person, the population, the mapping, and the four model surfaces |
-| 12 | `src/sim/` | 5 files, 1,504 lines | the run loop: the year, the scenarios in sequence, the migration journal, and the interventions |
+| 10 | **`src/model/`** | 56 files, 11,101 lines | **the longest read.** The person, the population, the mapping, and the four model surfaces |
+| 11 | `src/sim/` | 5 files, 1,504 lines | the run loop: the year, the scenarios in sequence, the migration journal, and the interventions |
 | | `src/output/` | 2 files, 451 lines | one owner per output file, rows in a defined order. Small, and load-bearing for every byte-identity claim |
-| 13 | `src/engine/` | 11 files, 1,923 lines | the top of the library: the session, module construction, the manifest, the compatibility flags, the diagnostics bridge |
-| 14 | `src/app/`, `src/server/`, `tools/`, `web/` | 3,009 lines of C++ in the CLI and the server, 1,468 in the two tools, 3,136 of TypeScript in the frontend | the three hosts and the two tools. Clients of the library, none of them privileged |
+| 12 | `src/engine/` | 11 files, 1,923 lines | the top of the library: the session, module construction, the manifest, the compatibility flags, the diagnostics bridge |
+| 13 | `src/app/`, `src/server/`, `tools/`, `web/` | 3,009 lines of C++ in the CLI and the server, 1,468 in the two tools, 3,136 of TypeScript in the frontend | the three hosts and the two tools. Clients of the library, none of them privileged |
 
-### 11 — `src/model/`, and the two files to read closely
+### 10 — `src/model/`, and the two files to read closely
 
 `src/model/` holds the modelling, and it is the only module where reading the `.cpp` files is not
 optional. Take it in this order:
@@ -309,7 +259,7 @@ in this project compares, and the last two build runs' findings are both in them
 - **[`src/model/riskfactor/hlm_model.cpp`](../src/model/riskfactor/hlm_model.cpp)** — the
   hierarchical linear model and its dynamic form. This is the surface `HLM_France` and `HLM_India`
   run on, the only surface on which an intervention actually applies today (upstream report 2), and
-  therefore the surface deviation B-24 was measured on.
+  therefore the surface deviation P-04 was measured on.
 - **[`src/model/riskfactor/kevin_hall/energy_balance.cpp`](../src/model/riskfactor/kevin_hall/energy_balance.cpp)**
   — the Kevin Hall two-compartment energy balance, 458 lines, solved in closed form once a year.
   Read it with [docs/findings/seed-80.md](findings/seed-80.md) open beside it. The partition
@@ -336,7 +286,7 @@ reductions), `null_check.py` and `calibrate.py` (the false-positive rate, measur
 (the census: many seeds of one implementation, every output file read rather than the exit code),
 and `run_test.py` (94 tests over all of it).
 
-Allow two hours for `run.py` and one for the rest. Budget more if you intend to change the rule.
+`run.py` is the one to take slowly. Take it slower still if you intend to change the rule.
 
 ### The rest of `tests/`
 
@@ -401,7 +351,7 @@ have made differently, and each has a record that says what the alternative cost
 
 6. **The comparison excludes the age bands only one implementation can fill.** It is the largest
    exclusion in the method and it removes real cells from the comparison. The argument is that those
-   bands measure deviation B-21 rather than agreement, and that including them would make every run
+   bands measure deviation P-01 rather than agreement, and that including them would make every run
    fail for a reason already recorded —
    [ADR 0027](decisions/0027-equivalence-excludes-the-bands-only-one-side-fills.md).
 

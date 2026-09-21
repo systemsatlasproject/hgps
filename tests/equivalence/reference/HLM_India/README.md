@@ -45,7 +45,7 @@ and were being count-weighted, and a reference holds *reduced* values.
 **The `food_labelling` one used to be expected to fail, and is not any more.** `HLM_India` is the
 only example that ships an active intervention, and the one it ships is the policy where the baseline
 re-applies its impact to a person who failed an early coverage draw and passed a later one
-(deviation B-24). Since ADR 0041 the comparison runs with the compatibility flags **on**, so this
+(deviation P-04). Since ADR 0041 the comparison runs with the compatibility flags **on**, so this
 build reproduces that behaviour and the comparison is clean; the deviation is then measured by a
 second pass with the flags off, which is reported rather than graded. On this reference that pass
 puts **194 series apart and 12,533 in agreement** to the baseline's printed precision.

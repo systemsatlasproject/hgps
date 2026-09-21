@@ -66,7 +66,7 @@ TEST(ServerApi, VersionReportsTheEngineAndTheCompatibilityFlags) {
     // The flags are listed here so a client need not hard-code them (ADR 0041).
     const auto flags = document.at("baseline_compat_flags");
     ASSERT_EQ(hgps::api::BaselineCompat::flag_count, flags.size());
-    EXPECT_EQ("B-24", flags.at(0).at("name").get<std::string>());
+    EXPECT_EQ("P-04", flags.at(0).at("name").get<std::string>());
     EXPECT_FALSE(flags.at(0).at("description").get<std::string>().empty());
 }
 
@@ -354,14 +354,14 @@ TEST_P(ServerApi, ARunTakesTheCompatibilityFlagsAndTheManifestRecordsThem) {
     auto client = served.client();
 
     const nlohmann::json body{{"example", example()},
-                              {"baseline_compat", nlohmann::json::array({"B-24"})}};
+                              {"baseline_compat", nlohmann::json::array({"P-04"})}};
     const auto created = client.Post("/api/runs", body.dump(), "application/json");
     ASSERT_TRUE(created);
     ASSERT_EQ(201, created->status) << created->body;
 
     const auto finished = served.wait_for_run(json_body(created).at("id").get<std::string>());
     ASSERT_EQ("completed", finished.value("state", std::string{})) << finished.dump(2);
-    EXPECT_EQ(nlohmann::json::array({"B-24"}), finished.at("manifest").at("baseline_compat"));
+    EXPECT_EQ(nlohmann::json::array({"P-04"}), finished.at("manifest").at("baseline_compat"));
 }
 
 TEST_P(ServerApi, AnUnknownCompatibilityFlagIsRefusedBeforeAnythingRuns) {

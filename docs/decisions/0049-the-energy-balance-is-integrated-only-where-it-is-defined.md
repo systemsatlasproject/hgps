@@ -4,7 +4,7 @@
 
 Accepted, 2026-09-19. Closes the tenth run's [docs/backlog.md](../backlog.md) item 2. Applies
 [ADR 0041](0041-deliberate-deviations-are-switchable.md)'s rule to the deviation it creates
-(**B-29**), and is the reason [ADR 0050](0050-no-output-carries-a-number-that-cannot-exist.md)'s
+(**P-09**), and is the reason [ADR 0050](0050-no-output-carries-a-number-that-cannot-exist.md)'s
 invariant check exists as a second line rather than as the only one.
 
 ## Context
@@ -78,7 +78,7 @@ what the step would have produced, what it produced instead, and what the steady
 manifest's `warnings` object is present and empty in an ordinary run, like `baseline_compat` and
 `perturbation` beside it, because an absent key reads as "nobody looked".
 
-**It is switchable: `--baseline-compat B-29`.** With the flag on, the energy balance integrates
+**It is switchable: `--baseline-compat P-09`.** With the flag on, the energy balance integrates
 straight through zero exactly as the baseline does, runaway and all. That is ADR 0041's rule and
 it is not a formality here: it is how "the guard changes nothing on 499 of 500 seeds" is a
 measurement.
@@ -126,13 +126,13 @@ would have measured it was running two five-hundred-seed censuses at the time, a
 taken then would say more about the contention than about the branch.
 
 **And it costs a deviation.** The two implementations now differ on any draw that reaches the
-boundary, which is what B-29 exists to measure. On `KevinHall_FINCH` the measurement is that the
+boundary, which is what P-09 exists to measure. On `KevinHall_FINCH` the measurement is that the
 difference is **exactly nothing on 499 of 500 seeds** — byte-identical CSVs with the guard on and
 off — and on seed 80 it is the difference between a results file and no results file at all.
 
 ## Consequences
 
-- `docs/deviations.md` gains **B-29**, with its flag and its evidence.
+- `docs/deviations.md` gains **P-09**, with its flag and its evidence.
 - The run manifest gains a `warnings` object, always present. The result CSVs do not change, which
   is the contract [ADR 0034](0034-a-run-manifest-beside-the-results.md) set and which the stored
   equivalence references depend on.

@@ -22,7 +22,7 @@ build once more with the flags **off** and reports the difference as a **deviati
 per variable per year, signed — reported, never graded.
 
 That changes two results below, and both changes are the same change: the `mean_bmi` cluster on
-`HLM_India` and the one isolated `HLM_France` residual were **B-24**, and with the flag on B-24 is
+`HLM_India` and the one isolated `HLM_France` residual were **P-04**, and with the flag on P-04 is
 not there. The sections describing them are kept as written, because how that cluster was
 identified is the more interesting half, and [§ Measured directly](#the-deviation-measured-directly)
 below has what the flag then said about it.
@@ -62,7 +62,7 @@ one, averaged over the same 20 seeds, so there is no Monte Carlo noise in it at 
 | `HLM_France` | **+0.0531** | 2037 | **+0.209%** |
 | `HLM_India` *(reduced)* | **+0.0313** | 2050 | **+0.160%** |
 
-This document has been quoting "about +0.2% of mean BMI" for B-24, inferred from which
+This document has been quoting "about +0.2% of mean BMI" for P-04, inferred from which
 out-of-tolerance cells looked like it. **The direct measurement agrees.** That is the good case,
 and the reason to build the mechanism is the case where it would not have.
 
@@ -99,7 +99,7 @@ output would have stopped it early and been reported as "no difference anywhere"
 
 The two "no difference anywhere" rows are not a null result: they are the statement that **no
 recorded deviation reaches those runs at all**, which is what makes their comparison a test of the
-code rather than of the deviations. B-24 is the only recorded deviation with a measurable effect on
+code rather than of the deviations. P-04 is the only recorded deviation with a measurable effect on
 a runnable example, and the only example that activates the policy it lives in is `HLM_India`.
 
 **It reaches further than mean BMI.** On `HLM_India`, **194 series differ** and 12,533 agree to the
@@ -166,7 +166,7 @@ whose models assign an income category.
 
 Every count matches, and the ones that differ from the baseline differ in the recorded direction:
 `KevinHall_FINCH`'s whole-population file has one fewer zero column here than in the baseline, and
-that column is `std_income`, which is **B-22**.
+that column is `std_income`, which is **P-02**.
 
 The seven that are zero in both of `KevinHall_FINCH`'s stratum files are worth naming, because
 "empty" and "wrong" are not the same and this is the list where they part company: `mean_sector`
@@ -180,7 +180,7 @@ says so in an assertion rather than leaving four columns whose emptiness nobody 
 each:
 
 - `KevinHall_FINCH · result · std_income` is zero in the **baseline** and filled here. That is
-  deviation **B-22**: the baseline's two paths to the column each defer to the other and neither
+  deviation **P-02**: the baseline's two paths to the column each defer to the other and neither
   fills it. The script requires such a column to be in the harness's `BASELINE_DOES_NOT_COMPUTE`
   and fails if it is not, so a column this build fills and the baseline does not cannot be an
   accident.
@@ -524,7 +524,7 @@ question, and it is in [docs/backlog.md](backlog.md) as one.
 **Since this run these five FINCH comparisons can no longer be produced by this build, and that is
 deliberate.** A config whose active intervention declares impacts the configured dynamic model would
 never apply is now refused at load time
-([ADR 0035](decisions/0035-refuse-an-intervention-no-model-applies.md), deviation B-25), because a
+([ADR 0035](decisions/0035-refuse-an-intervention-no-model-applies.md), deviation P-05), because a
 run that reports success and no effect is the shape of thing somebody mistakes for a result. The
 harness's FINCH overlay supplies non-empty impacts, so this build refuses exactly the five runs that
 produced the paragraphs above.
@@ -645,7 +645,7 @@ the first with 35 diseases rather than 6 or 15.
 ### Two comparisons, because the example ships a policy the two implementations deliberately differ on
 
 `HLM_India` is the only one of the three examples that ships an **active** intervention:
-`food_labelling`. That matters, because `food_labelling` is where deviation **B-24** lives — the
+`food_labelling`. That matters, because `food_labelling` is where deviation **P-04** lives — the
 baseline re-applies its impact to a person who failed an early coverage draw and passed a later one,
 and this build applies it once ([docs/deviations.md](deviations.md)). So the example's own
 configuration compares a policy the two implementations are *known and intended* to disagree about.
@@ -661,7 +661,7 @@ shift has no coverage book and no memory of who it has affected.
 | `food_labelling` | 60 | 68,833 | 34 | 1,791 |
 
 **These four runs were made with the compatibility flags off**, which is what this section is about:
-they are the measurement that attributed the `food_labelling` failures to B-24 before a flag existed
+they are the measurement that attributed the `food_labelling` failures to P-04 before a flag existed
 to prove it. The stored references are now the other thing — flags on, twenty seeds, **0 of 73,627**
 and **0 of 73,645** across four output families each — and
 `tests/equivalence/reference/HLM_India/README.md` records them. The whole-population halves of those
@@ -672,9 +672,9 @@ example are empty on both sides.
 either seed count** — 3 at 20 seeds and 28 at 60. That is the whole attribution, and the rest of this
 section is the evidence behind it.
 
-### The 31 `mean_bmi` comparisons are deviation B-24, measured
+### The 31 `mean_bmi` comparisons are deviation P-04, measured
 
-B-24 was found by reading the baseline's code two runs ago and has never been visible in a
+P-04 was found by reading the baseline's code two runs ago and has never been visible in a
 comparison until now. It is visible now, and the shape is unmistakable. Mean BMI of males, this
 build minus the baseline, averaged over 20 seeds:
 
@@ -689,7 +689,7 @@ build minus the baseline, averaged over 20 seeds:
 | 2030 | −0.00003 | **+0.04373** |
 | 2050 | −0.00003 | **+0.03981** |
 
-Five things, and each of them is what B-24 predicts:
+Five things, and each of them is what P-04 predicts:
 
 1. **The baseline scenario agrees to 2×10⁻⁵ BMI units at every year of the horizon** — a relative
    difference of 10⁻⁷, which is the floor of what the baseline's six printed significant digits can
@@ -717,13 +717,13 @@ the intervention scenario**, and India surfaces it because India's cohort here i
 which makes its seed-to-seed spread smaller and its allowance tighter. A tighter test found a real
 difference that a looser one had been passing over. That is the test working.
 
-**It is not corrected away, and the harness is not adjusted to admit it.** B-24 is a baseline defect
+**It is not corrected away, and the harness is not adjusted to admit it.** P-04 is a baseline defect
 this build deliberately does not reproduce ([ADR 0024](decisions/0024-deviations-recorded-baseline-bugs-fixed.md)),
 so a comparison that activates `food_labelling` on a surface where policies work *should* fail, and a
 harness that passed it would be the thing that was wrong. What `simple` shows is that nothing else
 does.
 
-### The six that are not B-24, and what they say about the harness
+### The six that are not P-04, and what they say about the harness
 
 The remaining failures — 6 at 60 seeds with `food_labelling`, 3 at 60 seeds with `simple`, none at 20
 seeds in either — are all the same shape: the **95th percentile of a rare-disease rate**, at 1.02× to
@@ -860,7 +860,7 @@ matter. `run_test.py` has one now.
 
 **Adds:** a third example, a second dynamic model family (`EBHLM`), 35 diseases against 6 and 15, a
 cohort twice the size of the other two, and about 273,000 further comparisons. A tighter test than
-either of the others, which is how it found B-24 in the numbers and a hole in the harness's lattice
+either of the others, which is how it found P-04 in the numbers and a hole in the harness's lattice
 detector on the same run.
 
 **Does not add:** anything about `HLM_India` as shipped. 12,406 people is not 1,240,613, the excluded
@@ -913,7 +913,7 @@ seed makes the two implementations' baseline-scenario cohort totals agree **exac
 year, for both sexes, at every seed. That is the proof that this one mechanism is the whole of the
 divergence, and it is what the exclusion in the reduction is for.
 
-**The verdict: a baseline defect**, recorded as **B-21** in [docs/deviations.md](deviations.md).
+**The verdict: a baseline defect**, recorded as **P-01** in [docs/deviations.md](deviations.md).
 The model's contract is that the cohort tracks the demographic projection; it does not, at the top
 of the age range, by a seed-dependent number of people, and nothing says so. It is a defect in the
 baseline rather than in this implementation, because this implementation follows the same rule and
@@ -1020,7 +1020,7 @@ tests/equivalence/run.py --example KevinHall_FINCH --seeds 60 \
 
 (The `HLM_India` columns are the `simple` runs at a reduced cohort — the comparison of the model
 surface rather than of a policy. Its `food_labelling` runs are the other two rows of the table in
-*The result — HLM_India*, and what they find is deviation B-24.)
+*The result — HLM_India*, and what they find is deviation P-04.)
 
 Tripling the seeds tightens every allowance by √3, so a difference that was hiding inside the
 allowance at 20 seeds surfaces at 60. **Something has, every time it has been tried**, and each time
@@ -1028,7 +1028,7 @@ the question was which of three things it was:
 
 - the previous run: a defect in the **test** — eighteen medians of lattice-valued series, above;
 - this run, on `HLM_India` with `food_labelling`: a real and **deliberate** difference in the code,
-  deviation B-24, which went from 1.07× at 20 seeds to 1.68× at 60 exactly as a fixed difference
+  deviation P-04, which went from 1.07× at 20 seeds to 1.68× at 60 exactly as a fixed difference
   against a shrinking allowance must;
 - this run, on `HLM_India` with either policy: three to six comparisons at 1.0–1.1× that are the
   same defect in the test as the first item, in a corner its rule does not reach — a rare-event
@@ -1052,7 +1052,7 @@ again over 60, every scenario and both sexes:
   0 of 22,616 on KevinHall_FINCH, at 20 seeds and again at 60;
 - **`HLM_India` agrees on the model surface and disagrees on exactly one policy**, which is a policy
   the two implementations are meant to disagree about: 0 of 66,787 with `simple` at 20 seeds, and
-  with `food_labelling` a cluster of `mean_bmi` comparisons that is deviation **B-24** seen in the
+  with `food_labelling` a cluster of `mean_bmi` comparisons that is deviation **P-04** seen in the
   numbers for the first time, +0.2% of mean BMI in the intervention scenario, reproduced at the same
   size on `HLM_France`. It was compared at **one hundredth of its shipped cohort**, and nothing in it
   is evidence about the full-scale example;
@@ -1064,7 +1064,7 @@ again over 60, every scenario and both sexes:
   below, so nothing else is passing by a hair and nothing suggests the thresholds are doing the
   work;
 - the mechanism behind the previous run's 54 residual failures has been measured, attributed to the
-  baseline, recorded as deviation B-21, and excluded from the reduction by a rule derived from the
+  baseline, recorded as deviation P-01, and excluded from the reduction by a rule derived from the
   data rather than declared;
 - the residual failures that survived that were, twice, defects in the **test** rather than in
   either implementation — a normal-theory allowance applied first to a point mass and then to a
@@ -1088,7 +1088,7 @@ again over 60, every scenario and both sexes:
 - **and five hundred seeds answered what two hundred could only raise**: the energy balance takes a
   body fat mass below zero on **4 of 500** seeds, and past the pole of its own partition
   coefficient on 1 of them. It is the *model's* arithmetic — the baseline's own statements produce
-  the same 10²⁸³ on the same state — so it is deviation **B-29** and a bounded guard rather than a
+  the same 10²⁸³ on the same state — so it is deviation **P-09** and a bounded guard rather than a
   bug fix, and over the 499 seeds both behaviours complete, **496 are byte-identical and 3 move by
   at most 0.85% in `std_weight` alone**;
 - and since this run, **the comparison runs with the deliberate deviations put back**, so the two
@@ -1308,7 +1308,7 @@ implementations, and it is the silent case that reaches a results file.
 
 #### What the guard is worth, measured over every seed
 
-Each of the 500 seeds was run twice — once with `--baseline-compat B-29`, which is the unguarded
+Each of the 500 seeds was run twice — once with `--baseline-compat P-09`, which is the unguarded
 behaviour, and once without — and the two runs' **output files compared byte for byte**, every
 family:
 
@@ -1337,7 +1337,7 @@ exists for.
 
 #### Byte identity on the reference seeds, against the binary that predates the fix
 
-The pre-fix binary was rebuilt from the commit before the fix — it does not know the `B-29` flag
+The pre-fix binary was rebuilt from the commit before the fix — it does not know the `P-09` flag
 exists — and run against the fixed one on the seeds every stored reference is built from, all
 three runnable examples, comparing every output family:
 
@@ -1364,7 +1364,7 @@ Two things, both in [docs/upstream-reports.md](upstream-reports.md):
 - **report 7**, found while looking for what *should* have caught the first one:
   `analysis_module.cpp` replaces a `NaN` risk factor with **zero** while accumulating the year's
   means, and says nothing; `std::isnan` is false for `±inf`, so an infinity is not looked at at
-  all. That is deviation **B-30** and [ADR 0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md).
+  all. That is deviation **P-10** and [ADR 0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md).
 
 #### And the "three-year precursor" is withdrawn
 

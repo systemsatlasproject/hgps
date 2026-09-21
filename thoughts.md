@@ -74,7 +74,7 @@ branches on that to pick the one-arm or two-arm `Runner::run` overload.
 
 So `running.interventions.active_type_id` is doing two separate jobs:
 
-1. choosing **which policy** runs (live only on the EBHLM surface — B-25), and
+1. choosing **which policy** runs (live only on the EBHLM surface — P-05), and
 2. switching the run from **one arm to two**.
 
 On the Kevin Hall surface only job 2 is live, which is why those four examples ship
@@ -87,8 +87,8 @@ recorded anywhere is the **consequence for the other mechanism**:
 > name an intervention in a block that does nothing on that surface.
 
 A config with `policy_start_year: 2024` and no `active_type_id` loads clean, runs single-arm, and
-the policy **silently never fires** — no warning, no error. That is the same class of thing B-25
-is, in the opposite direction, and B-25 is a load-time error here.
+the policy **silently never fires** — no warning, no error. That is the same class of thing P-05
+is, in the opposite direction, and P-05 is a load-time error here.
 
 **Worth doing, and it needs no upstream ruling** (unlike backlog item 1, which is about where a
 policy should *apply* on that surface — a different question). Let *any* configured policy
@@ -102,7 +102,7 @@ intervention arm will exist, in the same shape as
 
 ---
 
-## 3. `policy_start_year` on the HLM surface is silently inert — the unguarded mirror of B-25
+## 3. `policy_start_year` on the HLM surface is silently inert — the unguarded mirror of P-05
 
 **Kind:** missing validation. **Confidence:** high for "nothing checks it"; would need a run to see
 what a user actually experiences.
@@ -114,7 +114,7 @@ So setting `policy_start_year` on an `HLM_France`-shaped config is a no-op with 
 loader validates the *year* (`loader.cpp:506-515`) and never cross-checks it against the configured
 model family.
 
-This is structurally identical to B-25 — a policy mechanism configured on a surface that doesn't
+This is structurally identical to P-05 — a policy mechanism configured on a surface that doesn't
 implement it — and this project treats that as a **load-time error** worth an ADR of its own. The
 asymmetry is just that one mechanism got the check and the other didn't:
 
@@ -239,10 +239,10 @@ might wash out entirely.
 **What I'd want to know, in order:**
 
 1. Does the upstream baseline use the same rule? Every other migration decision in this file has a
-   comment saying how it relates to the baseline (the immigration candidate list cites audit N-8);
+   comment saying how it relates to the baseline (the immigration candidate list cites audit N-08);
    this one has none, which is either "same as upstream, not worth saying" or an unexamined gap.
 2. If it *is* the same rule, it belongs in `docs/deviations.md` as a kept-deliberately entry the way
-   B-21 is, rather than being invisible.
+   P-01 is, rather than being invisible.
 3. Is emigration by slot order distinguishable from emigration at random, in the outputs? That's a
    `seed_scan.py`-shaped question and the machinery to answer it already exists.
 

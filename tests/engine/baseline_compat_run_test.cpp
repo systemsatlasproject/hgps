@@ -1,7 +1,7 @@
 // The compatibility flag, end to end: it must reach the engine, change the numbers in the way the
 // deviation predicts, and be recorded in the manifest of the run that used it (ADR 0041).
 //
-// The unit tests in tests/sim/interventions_test.cpp pin the one statement B-24 selects. These
+// The unit tests in tests/sim/interventions_test.cpp pin the one statement P-04 selects. These
 // check that a flag written in a config document arrives there at all — the part a unit test on
 // the scenario class cannot see.
 #include "support/fixture_packs.h"
@@ -31,7 +31,7 @@ std::string read_file(const std::filesystem::path &path) {
     return buffer.str();
 }
 
-/// @brief A pack's config with `food_labelling` active — the one policy B-24 lives in — and
+/// @brief A pack's config with `food_labelling` active — the one policy P-04 lives in — and
 ///        whatever compatibility flags are asked for.
 nlohmann::json food_labelling_document(const hgps::test::FixturePack &pack,
                                        const nlohmann::json &compat_flags) {
@@ -87,13 +87,13 @@ TEST_P(BaselineCompatEndToEnd, TheManifestNamesTheFlagsTheRunUsed) {
     const auto config =
         hgps::test::write_config_variant(pack(), "compat_manifest_config",
                                          food_labelling_document(
-                                             pack(), nlohmann::json::array({"B-24"})));
+                                             pack(), nlohmann::json::array({"P-04"})));
 
     const auto outcome = hgps::test::run_simulation(config, pack_scratch("compat_manifest_out"));
     ASSERT_TRUE(outcome.succeeded) << outcome.report.to_string();
 
     const auto manifest = read_json(outcome.manifest_path);
-    EXPECT_EQ(nlohmann::json::array({"B-24"}), manifest.at("baseline_compat"));
+    EXPECT_EQ(nlohmann::json::array({"P-04"}), manifest.at("baseline_compat"));
 }
 
 TEST_P(BaselineCompatEndToEnd, TheFlagChangesTheResultsAndNothingElseDoes) {
@@ -106,7 +106,7 @@ TEST_P(BaselineCompatEndToEnd, TheFlagChangesTheResultsAndNothingElseDoes) {
     const auto restored =
         hgps::test::write_config_variant(pack(), "compat_restored_config",
                                          food_labelling_document(
-                                             pack(), nlohmann::json::array({"B-24"})));
+                                             pack(), nlohmann::json::array({"P-04"})));
 
     const auto fixed_run = hgps::test::run_simulation(fixed, pack_scratch("compat_fixed_out"));
     ASSERT_TRUE(fixed_run.succeeded) << fixed_run.report.to_string();
@@ -137,10 +137,10 @@ TEST_P(BaselineCompatEndToEnd, TheFlagIsPartOfWhatALoadedConfigurationReports) {
     const auto config =
         hgps::test::write_config_variant(pack(), "compat_reported_config",
                                          food_labelling_document(
-                                             pack(), nlohmann::json::array({"B-24"})));
+                                             pack(), nlohmann::json::array({"P-04"})));
 
     hgps::api::Report report;
     const auto configuration = hgps::api::load_configuration(config, {}, report);
     ASSERT_TRUE(configuration.has_value()) << report.to_string();
-    EXPECT_TRUE(configuration->baseline_compat().is_set(hgps::api::CompatFlag::b24));
+    EXPECT_TRUE(configuration->baseline_compat().is_set(hgps::api::CompatFlag::p04));
 }

@@ -72,13 +72,13 @@ search for the number.
 - [0021 — Scope for this run: the FINCH and HLM_France surfaces, with the `simple` intervention](0021-scope-finch-and-hlm-france.md) — the historical scope record; the surface is wider now, and this is where it started.
 - [0029 — One shape for the five age-banded interventions, and a parameter struct for the model families](0029-one-banded-intervention-shape.md) — five upstream intervention types that are one shape with different numbers.
 - [0030 — The converter selects a policy scenario for the FINCH example, rather than the example being edited](0030-policy-scenario-selection-for-the-broken-finch-example.md) — what to do when an upstream config names files its own pack does not contain.
-- [0049 — The energy balance is integrated only as far as the model is defined](0049-the-energy-balance-is-integrated-only-where-it-is-defined.md) — the body-fat pole, the bound that stops at it, and why that particular bound and no other. Flag `B-29`.
+- [0049 — The energy balance is integrated only as far as the model is defined](0049-the-energy-balance-is-integrated-only-where-it-is-defined.md) — the body-fat pole, the bound that stops at it, and why that particular bound and no other. Flag `P-09`.
 
 ## Output, and the record a run leaves behind
 
 - [0020 — One owner per output file; rows in a defined order](0020-output-single-owner-defined-row-order.md) — the rule that makes byte-identical output possible at all.
 - [0034 — Every run writes a manifest beside its results](0034-a-run-manifest-beside-the-results.md) — config hash, data checksum, the seed actually used, the commit, and every located warning.
-- [0050 — No output carries a number that cannot exist](0050-no-output-carries-a-number-that-cannot-exist.md) — upstream report 7: the run stops where nothing downstream could know the right answer. Flag `B-30`.
+- [0050 — No output carries a number that cannot exist](0050-no-output-carries-a-number-that-cannot-exist.md) — upstream report 7: the run stops where nothing downstream could know the right answer. Flag `P-10`.
 
 ## Testing strategy and the fixture packs
 

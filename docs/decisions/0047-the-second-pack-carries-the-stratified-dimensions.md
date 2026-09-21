@@ -42,7 +42,7 @@ possible, including `income_based_csv_output`.
 
 It keeps its `EBHLM` dynamic model. The two model slots are independent in the loader, and the
 pack's active intervention has to reach a dynamic model that applies it, which `EBHLM` does and
-`KevinHall` does not (deviation **B-25**). Pairing `StaticLinear` with `EBHLM` is not a combination
+`KevinHall` does not (deviation **P-05**). Pairing `StaticLinear` with `EBHLM` is not a combination
 any upstream example uses; it is a combination this engine accepts, and a fixture is the right place
 to find out that it works.
 

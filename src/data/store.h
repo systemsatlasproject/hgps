@@ -100,7 +100,7 @@ class Store {
     ///         config that asks for a fraction and does not get one is an **error** here and a silent
     ///         warning upstream, which is the difference that matters: upstream's run then applies no
     ///         policy at all and reports success
-    ///         (docs/decisions/0038-population-impact-fraction.md, deviation B-26).
+    ///         (docs/decisions/0038-population-impact-fraction.md, deviation P-06).
     std::optional<std::vector<core::PifDataRow>>
     population_impact_fraction(const core::DiseaseInfo &info, const core::Country &country,
                                const std::string &risk_factor, const std::string &scenario,

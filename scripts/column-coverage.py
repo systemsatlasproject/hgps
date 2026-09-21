@@ -177,7 +177,7 @@ def compare(example: str, baseline: dict[str, dict], mine: dict[str, dict]) -> l
 
         # And its mirror, which is not a failure but must be a *recorded* difference rather than a
         # surprise: the only reason to fill a column the baseline leaves empty is that the baseline
-        # is defective and the harness knows it (docs/deviations.md B-22).
+        # is defective and the harness knows it (docs/deviations.md P-02).
         for column in sorted((their_zero & shared) - our_zero):
             if column in eqrun.BASELINE_DOES_NOT_COMPUTE:
                 identifier, _ = eqrun.BASELINE_DOES_NOT_COMPUTE[column]

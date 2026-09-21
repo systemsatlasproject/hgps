@@ -8,7 +8,7 @@
 //
 // The baseline replaces a NaN with zero in the same loop and says nothing
 // (`analysis_module.cpp:388`), so an impossible value becomes a quietly wrong mean; it does not
-// look at an infinity at all. That is deviation B-30, and the flag that restores it is tested
+// look at an infinity at all. That is deviation P-10, and the flag that restores it is tested
 // here beside the guard, because "what does the baseline do instead?" is the question a reader
 // of a deviation asks first.
 #include "model/analysis/analysis_module.h"
@@ -253,7 +253,7 @@ TEST(AnalysisInvariants, AnAbsentFactorStillContributesNothingRatherThanFailing)
 }
 
 TEST(AnalysisInvariants, WithTheB30FlagOnTheBaselineSubstitutionIsBackAndMeasurable) {
-    // B-30: a NaN becomes zero and the run carries on, which is what the baseline does. The
+    // P-10: a NaN becomes zero and the run carries on, which is what the baseline does. The
     // point of the flag is that the *size* of the difference is a measurement — here, a mean
     // weight of 40 where the truth is undefined.
     auto cohort = make_cohort();

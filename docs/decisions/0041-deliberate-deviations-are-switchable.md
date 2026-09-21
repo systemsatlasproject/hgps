@@ -14,7 +14,7 @@ that record was a **claim in prose**: the code did the fixed thing, the baseline
 thing, and the difference between them was whatever the equivalence harness happened to see.
 
 Then the harness saw one. The `HLM_India` comparison put 31 `mean_bmi` comparisons out of tolerance,
-and the fourth run's analysis attributed all of them to **B-24** — the food-labelling policy
+and the fourth run's analysis attributed all of them to **P-04** — the food-labelling policy
 re-applying its impact to somebody who failed an early coverage draw and passed a later one. The
 attribution was careful and it was right: the curve had the shape the defect predicts, it was zero in
 the policy's first year because the defect needs a *previous* failed draw, and it reproduced on
@@ -37,8 +37,8 @@ the engine reproduces the baseline's behaviour exactly — bug and all.**
 
 - The flags live in one place, `include/hgps/baseline_compat.h`, as `api::BaselineCompat`: a small
   set with one bit per deviation.
-- **A flag is named after its deviation's ID in [docs/deviations.md](../deviations.md)** — `B-24`,
-  not `food_labelling_retry`. A manifest carrying `"B-24"` leads straight to the row explaining what
+- **A flag is named after its deviation's ID in [docs/deviations.md](../deviations.md)** — `P-04`,
+  not `food_labelling_retry`. A manifest carrying `"P-04"` leads straight to the row explaining what
   it restores. A test asserts that every flag has such a row, so a flag cannot be added without one.
 - They are **off by default**, everywhere: the fixed behaviour is what this project stands behind,
   and a flag is a request to reproduce a defect on purpose.
@@ -73,19 +73,19 @@ fourth run's `HLM_India` result is the argument: 28 of 34 out-of-tolerance compa
 deviation, which had to be identified by hand before the remaining 6 could be looked at at all. With
 flags on, those 28 do not appear, and the 6 are the finding.
 
-**Why the impact is reported and not graded.** A deviation's effect has no right size. B-24's is
+**Why the impact is reported and not graded.** A deviation's effect has no right size. P-04's is
 +0.2% of mean BMI; the next one's might be zero or might be large. A pass/fail threshold on it would
 be a number nobody could justify, and it would fail for the wrong reason the first time somebody
 fixed a bigger defect. The figure is evidence for a reader, so it is printed as evidence.
 
 **Why the flag is in the public API rather than an internal detail.** A host that wants to show a
-user "here is what our fix to B-24 is worth on your data" needs to run both, and the engine is a
+user "here is what our fix to P-04 is worth on your data" needs to run both, and the engine is a
 library ([ADR 0032](0032-library-and-a-thin-cli.md)). Making this internal would mean the harness
 could measure a deviation and nobody else could.
 
 ## What it costs
 
-A branch in the code the deviation lives in, for as long as the deviation is recorded — for B-24,
+A branch in the code the deviation lives in, for as long as the deviation is recorded — for P-04,
 one `if` around one statement, chosen so that the two spellings sit side by side and a reader sees
 both. That is a real maintenance cost and it is paid per deviation, which is the reason this ADR
 says *deviations that change outputs* rather than all 45: a difference nobody can observe in the
@@ -122,7 +122,7 @@ reviewed against this distinction when this ADR was written; see
 
 ## Consequences
 
-- `docs/deviations.md` gains a column saying which deviations have a flag, and B-24's row names it.
+- `docs/deviations.md` gains a column saying which deviations have a flag, and P-04's row names it.
 - Any future deviation that changes outputs is incomplete until it has one. That is the rule this
   ADR exists to establish, and the test tying flags to `docs/deviations.md` is half of its
   enforcement; the other half is review.

@@ -34,7 +34,7 @@ void SesNoiseModule::update_population(RuntimeContext &context) {
     //
     // The baseline collects the newborn indices with find_index_of_all — which gathers them from
     // parallel tasks under a mutex, in nondeterministic order — and then sorts them, with a
-    // comment saying the sort is needed for repeatability (audit N-8). Walking the population in
+    // comment saying the sort is needed for repeatability (audit N-08). Walking the population in
     // order needs neither the gather nor the sort.
     for (auto &person : context.population()) {
         if (person.is_active() && person.age == 0) {

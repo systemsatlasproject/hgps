@@ -69,7 +69,7 @@ class AnalysisModule final : public UpdatableModule {
     /// @brief Whether results are also reported by income category.
     void set_income_analysis_enabled(bool enabled) noexcept { income_analysis_ = enabled; }
 
-    /// @brief B-30 on: a value that is not a number is counted as zero while the year's means
+    /// @brief P-10 on: a value that is not a number is counted as zero while the year's means
     ///        are accumulated, as the baseline does, instead of stopping the run.
     void set_substitutes_impossible_values(bool substitutes) noexcept {
         substitutes_impossible_values_ = substitutes;

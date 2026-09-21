@@ -107,6 +107,6 @@ piping one does not swallow the other.
 `on_diagnostic` has no producer yet. Every diagnostic the engine can raise is raised while loading,
 which is the design ([ADR 0018](0018-no-swallowing-catch-load-time-validation.md)), and the method
 exists because the first thing that will need it is already known: the immigration shortfall into an
-emptying band (B-21) is currently a per-year metric in the results file and nothing tells anybody
+emptying band (P-01) is currently a per-year metric in the results file and nothing tells anybody
 about it while it happens. Adding a producer is then a change to one call site rather than to the
 API.

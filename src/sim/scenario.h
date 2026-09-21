@@ -274,7 +274,7 @@ class PhysicalActivityScenario final : public BandedInterventionScenario {
 ///        a higher rate in the policy's first years than afterwards; the impact is a product of
 ///        the effect, an adjustment factor, the person's value of an adjusted risk factor, and a
 ///        transfer coefficient that depends on their sex and whether they are a child.
-/// One deviation lives here, B-24, and it is switchable: with `api::CompatFlag::b24` on, the
+/// One deviation lives here, P-04, and it is switchable: with `api::CompatFlag::p04` on, the
 /// scenario re-applies its impact the way the baseline does. See `impact_for` for the single
 /// statement that differs, and docs/decisions/0041-deliberate-deviations-are-switchable.md for
 /// why a deliberate deviation has to be switchable at all.
@@ -299,7 +299,7 @@ class FoodLabellingScenario final : public BandedInterventionScenario {
     /// @brief Child male, child female, adult male, adult female.
     std::array<double, 4> transfer_{};
 
-    /// @brief B-24: on, a person who has already been marked unaffected keeps that mark even
+    /// @brief P-04: on, a person who has already been marked unaffected keeps that mark even
     ///        after a later draw succeeds, so the policy offers them the impact again every
     ///        remaining year of the coverage window — which is what the baseline does.
     bool b24_retry_{false};

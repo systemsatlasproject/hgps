@@ -411,7 +411,7 @@ PackLayout variant_layout() {
 ///
 /// It keeps the pack's `EBHLM` dynamic model. The two slots are independent in the loader, and the
 /// intervention this pack activates has to reach a dynamic model that applies it, which `EBHLM`
-/// does and `KevinHall` does not (deviation B-25).
+/// does and `KevinHall` does not (deviation P-05).
 std::string static_linear_model_json(const FixturePackSpec &spec, const PackLayout &layout) {
     json document;
     document["$comment"] =
@@ -459,7 +459,7 @@ std::string static_linear_model_json(const FixturePackSpec &spec, const PackLayo
 /// @brief The `food_labelling` definition the variant pack activates.
 ///
 /// A coverage rate strictly between 0 and 1 and at least three years of policy, because that is
-/// what it takes for deviation B-24 to be reachable at all: somebody has to fail one draw, pass a
+/// what it takes for deviation P-04 to be reachable at all: somebody has to fail one draw, pass a
 /// later one, and be wrongly offered the impact again in a third.
 json food_labelling_definition(const FixturePackSpec &spec) {
     return json{

@@ -1,7 +1,7 @@
 // New here. Determinism contract clause D3: an RNG draw inside a parallel region must fail loudly
 // instead of producing a number that depends on thread scheduling.
 //
-// The baseline holds this property by convention only — audit N-4 records that adding one
+// The baseline holds this property by convention only — audit N-04 records that adding one
 // context.random() call inside any existing tbb::parallel_for_each would introduce both a data
 // race and nondeterminism, and would compile without complaint. The earlier rewrite kept the same
 // conventional guarantee and missed a site (finding R-04).

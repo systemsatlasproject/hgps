@@ -13,7 +13,7 @@ test.describe('the run screen', () => {
     const screen = await openScreen(page, 'run', 'Run');
 
     // Listed by the server so a client need not hard-code them (ADR 0041).
-    await expect(screen.locator('#flag-B-24')).toHaveCount(1);
+    await expect(screen.locator('#flag-P-04')).toHaveCount(1);
   });
 
   for (const pack of PACKS) {

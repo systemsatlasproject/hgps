@@ -141,12 +141,12 @@ TEST(CommandLine, BaselineCompatIsOffUnlessAsked) {
 }
 
 TEST(CommandLine, BaselineCompatTakesAFlagNameAndRepeats) {
-    const auto once = parse({"-c", "run.json", "--baseline-compat", "B-24"});
+    const auto once = parse({"-c", "run.json", "--baseline-compat", "P-04"});
     ASSERT_TRUE(once.options.has_value()) << once.message;
-    EXPECT_TRUE(once.options->baseline_compat.is_set(hgps::api::CompatFlag::b24));
+    EXPECT_TRUE(once.options->baseline_compat.is_set(hgps::api::CompatFlag::p04));
 
     // Repeating the same flag is not an error, and neither is asking for all of them twice.
-    const auto twice = parse({"-c", "run.json", "--baseline-compat", "B-24",
+    const auto twice = parse({"-c", "run.json", "--baseline-compat", "P-04",
                               "--baseline-compat", "all"});
     ASSERT_TRUE(twice.options.has_value()) << twice.message;
     EXPECT_EQ(hgps::api::BaselineCompat::flag_count, twice.options->baseline_compat.count());
@@ -156,7 +156,7 @@ TEST(CommandLine, AnUnknownBaselineCompatFlagIsRefusedWithTheListOfRealOnes) {
     const auto result = parse({"-c", "run.json", "--baseline-compat", "B-99"});
     EXPECT_FALSE(result.options.has_value());
     EXPECT_NE(std::string::npos, result.message.find("B-99"));
-    EXPECT_NE(std::string::npos, result.message.find("B-24")) << result.message;
+    EXPECT_NE(std::string::npos, result.message.find("P-04")) << result.message;
 
     const auto missing = parse({"-c", "run.json", "--baseline-compat"});
     EXPECT_FALSE(missing.options.has_value());

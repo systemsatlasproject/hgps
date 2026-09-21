@@ -131,7 +131,7 @@ TEST(PopulationImpactFractionData, ARiskFactorTheStoreDoesNotHaveIsAnErrorNaming
     // Upstream warns — silently, unless the run is verbose — and returns nothing, so a config naming a
     // risk factor the store does not have for a disease runs with no policy applied to that disease
     // and reports success. `KevinHall_PIF`'s own legacy `config.json` does exactly that for four of
-    // the fifteen diseases it selects (deviation B-26, docs/examples.md).
+    // the fifteen diseases it selects (deviation P-06, docs/examples.md).
     const auto store = open_synthetic_store();
     IssueReport report;
 
@@ -152,7 +152,7 @@ TEST(PopulationImpactFractionData, TheSexColumnIsZeroForMaleAndOneForFemale) {
     // upstream's own loader reads `csv_gender == 0 ? male : female`, and the data agrees. The decisive
     // case is in the real pack rather than here: `cervicalcancer`, a female-only disease, has a table
     // that is non-zero only at Gender=1 and identically zero at Gender=0. That pack is 5.4 MB fetched
-    // from a release URL and is not vendored, so the evidence lives in docs/deviations.md (B-27) with
+    // from a release URL and is not vendored, so the evidence lives in docs/deviations.md (P-07) with
     // the command that reproduces it, and what is pinned here is that the reader implements the
     // encoding the data has.
     //

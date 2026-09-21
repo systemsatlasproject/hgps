@@ -42,16 +42,16 @@ TEST(BaselineCompatFlags, AllTurnsOnEveryFlagThereIs) {
 }
 
 TEST(BaselineCompatFlags, NameMatchingIgnoresCaseAndSeparators) {
-    for (const auto *spelling : {"B-24", "b-24", "B_24", "b24", "B24"}) {
+    for (const auto *spelling : {"P-04", "p-04", "P_04", "p04", "P04"}) {
         BaselineCompat compat;
         ASSERT_TRUE(BaselineCompat::apply_name(spelling, compat)) << spelling;
-        EXPECT_TRUE(compat.is_set(CompatFlag::b24)) << spelling;
+        EXPECT_TRUE(compat.is_set(CompatFlag::p04)) << spelling;
     }
 }
 
 TEST(BaselineCompatFlags, AnUnknownNameIsRefusedAndChangesNothing) {
     BaselineCompat compat;
-    compat.set(CompatFlag::b24);
+    compat.set(CompatFlag::p04);
 
     EXPECT_FALSE(BaselineCompat::apply_name("B-99", compat));
     EXPECT_FALSE(BaselineCompat::apply_name("", compat));
@@ -59,7 +59,7 @@ TEST(BaselineCompatFlags, AnUnknownNameIsRefusedAndChangesNothing) {
 
     // Still exactly what it was: a refused name must not half-apply.
     EXPECT_EQ(1U, compat.count());
-    EXPECT_TRUE(compat.is_set(CompatFlag::b24));
+    EXPECT_TRUE(compat.is_set(CompatFlag::p04));
 }
 
 TEST(BaselineCompatFlags, ApplyNameAcceptsAll) {
@@ -70,25 +70,25 @@ TEST(BaselineCompatFlags, ApplyNameAcceptsAll) {
 
 TEST(BaselineCompatFlags, MergeIsTheUnion) {
     BaselineCompat left;
-    left.set(CompatFlag::b24);
+    left.set(CompatFlag::p04);
 
     BaselineCompat right;
     right.merge(left);
-    EXPECT_TRUE(right.is_set(CompatFlag::b24));
+    EXPECT_TRUE(right.is_set(CompatFlag::p04));
 
     // Merging something empty takes nothing away.
     right.merge(BaselineCompat{});
-    EXPECT_TRUE(right.is_set(CompatFlag::b24));
+    EXPECT_TRUE(right.is_set(CompatFlag::p04));
 }
 
 TEST(BaselineCompatFlags, NamesAreTheFlagsThatAreOn) {
     BaselineCompat compat;
     EXPECT_TRUE(compat.names().empty());
 
-    compat.set(CompatFlag::b24);
-    EXPECT_EQ(std::vector<std::string>{"B-24"}, compat.names());
+    compat.set(CompatFlag::p04);
+    EXPECT_EQ(std::vector<std::string>{"P-04"}, compat.names());
 
-    compat.set(CompatFlag::b24, false);
+    compat.set(CompatFlag::p04, false);
     EXPECT_TRUE(compat.names().empty());
 }
 

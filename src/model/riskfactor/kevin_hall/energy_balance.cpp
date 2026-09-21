@@ -344,7 +344,7 @@ void KevinHallModel::run_energy_balance(RuntimeContext &context, Person &person)
     // thousand adult person-years, -1.7e283 kg, in a model whose coefficients admit it and in a
     // baseline that computes it identically (docs/findings/seed-80.md, ADR 0049).
     //
-    // Switchable: with B-29 on the baseline's unbounded integration is back, bug and all.
+    // Switchable: with P-09 on the baseline's unbounded integration is back, bug and all.
     auto step = parameters_->unbounded_body_fat
                     ? BoundedStep{.fat = steady_fat - (steady_fat - fat_0) * reached,
                                   .lean = steady_lean - (steady_lean - lean_0) * reached,

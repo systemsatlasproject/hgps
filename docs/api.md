@@ -226,11 +226,11 @@ than inferred from which out-of-tolerance comparisons look like it ([ADR
 
 ```cpp
 hgps::api::LoadOptions options;
-options.baseline_compat.set(hgps::api::CompatFlag::b24);
+options.baseline_compat.set(hgps::api::CompatFlag::p04);
 ```
 
 - Off by default, everywhere. The fixed behaviour is the one this project stands behind.
-- A flag is named after its deviation's ID in [docs/deviations.md](deviations.md) — `B-24` — so a
+- A flag is named after its deviation's ID in [docs/deviations.md](deviations.md) — `P-04` — so a
   flag in a manifest leads straight to the row explaining what it restores. A test asserts every
   flag has such a row.
 - The configuration document's `baseline_compat` array and this field are **unioned**; neither

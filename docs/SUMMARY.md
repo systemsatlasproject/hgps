@@ -1,7 +1,8 @@
 # Summary of the tenth build run
 
-> This file is the internal record, written for readers who already have the context;
-> [docs/briefing.md](briefing.md) says the same things plainly and in a quarter of the words.
+> This file is the internal record of one build run, written for readers who already have the
+> context. [docs/upstream-reports.md](upstream-reports.md) is the document addressed to the upstream
+> authors, and says what was found in their code plainly.
 
 ## State of the project
 
@@ -21,8 +22,8 @@ blocking: where a policy should apply on the Kevin Hall surface, which leaves fo
 examples runnable only with a no-op intervention, and whether the newborn weight bound or the
 quantile curve is wrong in `KevinHall_India`, which stops the other two in their first simulated
 year. Read [docs/READING-GUIDE.md](READING-GUIDE.md) if you are going through the repository end to
-end, [docs/briefing.md](briefing.md) if you have twenty minutes, and the rest of this file for the
-numbers behind every claim above.
+end, [docs/upstream-reports.md](upstream-reports.md) if what you want is what this found in the
+baseline, and the rest of this file for the numbers behind every claim above.
 
 ## What this file is
 
@@ -74,8 +75,8 @@ write the impossible person out**.
 |---:|---|---|
 | 1 | Orientation, pre-flight, CI on HEAD, the 500-seed sweeps started | **16 of 16 green** on `7ee75ba`, run 35437864699, read per job with `gh`. Both censuses started before anything else, and they were the run's long pole exactly as expected: 88 minutes for the baseline's 500 seeds and 37 for this build's 1,000 runs. |
 | 2 | Reproduce and trace seed 80 | **Done, and the answer is that it is not ours.** Traced term by term in a separate build tree so the running census was not disturbed; the mechanism is a pole in the model's own partition coefficient, and the baseline's own statements reproduce the number digit for digit. [docs/findings/seed-80.md](findings/seed-80.md). **Two findings, one of them a retraction of the ninth run's.** |
-| 3 | Fix, classified | **ADR 0041's third case**: an instability the fitted model admits and the baseline does not mask. A bounded guard, flag **B-29**, 15 tests. Byte-identical on every reference seed of all three examples against the binary that predates it. |
-| 4 | The invariant guard | **Done, and it found a second baseline defect on the way** — the `NaN`-to-zero substitution the guard replaces. Flag **B-30**, 7 tests, [ADR 0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md). |
+| 3 | Fix, classified | **ADR 0041's third case**: an instability the fitted model admits and the baseline does not mask. A bounded guard, flag **P-09**, 15 tests. Byte-identical on every reference seed of all three examples against the binary that predates it. |
+| 4 | The invariant guard | **Done, and it found a second baseline defect on the way** — the `NaN`-to-zero substitution the guard replaces. Flag **P-10**, 7 tests, [ADR 0050](decisions/0050-no-output-carries-a-number-that-cannot-exist.md). |
 | 5 | The sweep results | **1,500 runs.** Table below. The headline is that four seeds in five hundred reach the boundary and only one of them fails, so the silent case is three times as common as the loud one. |
 | 6 | Equivalence after the fix | All stored references re-scored and none fails; **60 of 60** reference-seed runs byte-identical to the pre-fix binary across every output family; **496 of 499** census seeds byte-identical with the deviation on and off. |
 | 7 | Docs | Two ADRs, a findings write-up, [docs/upstream-reports.md](upstream-reports.md) grown from five reports to seven, deviations, briefing, equivalence, design, and a backlog whose only correctness item is now closed. |
@@ -111,7 +112,7 @@ control for that column and the reason report 6 matters at four seeds in five hu
 
 ### What the guard is worth, over every seed
 
-Each of the 500 seeds was run twice, with and without `--baseline-compat B-29`, and the two runs'
+Each of the 500 seeds was run twice, with and without `--baseline-compat P-09`, and the two runs'
 output files compared byte for byte:
 
 | | |
@@ -132,7 +133,7 @@ dispersion test the ninth run added could have caught and nothing else could.
 
 ### Byte identity against the binary that predates the fix
 
-Rebuilt from the commit before it, so it does not know `B-29` or `B-30` exist:
+Rebuilt from the commit before it, so it does not know `P-09` or `P-10` exist:
 
 | Example | seeds | identical | differ |
 |---|---:|---:|---:|
@@ -153,7 +154,7 @@ They are the same run's work and they behave oppositely on purpose.
 | when | a year's step would take body fat below zero | a value is about to become a mean and is not finite, or not a description of a person |
 | what it does | integrates the year **only to the instant fat reaches zero** — `exp(-t*/tau) = F* / (F* - F0)`, the model's own trajectory at the edge of the model's own domain — and carries on | **stops the run**, naming the person, the year and the term |
 | why the difference | something downstream knows what should have happened: the model's own solution, evaluated where it is still defined | nothing knows what a `NaN` BMI should have been, and choosing a correction would be a modelling decision made in the wrong place |
-| flag | `B-29` | `B-30` |
+| flag | `P-09` | `P-10` |
 
 That rule — *bound and record where something knows the answer, stop where nothing does* — is the
 part of this run worth keeping if the rest is forgotten.
@@ -282,7 +283,7 @@ than leaving the field out.
 - **Population impact fraction has never met the baseline.** Only the synthetic pack exercises it
   end to end; the one example that uses it cannot run.
 - **Four of the six upstream examples can only be compared with `simple` active**, because an
-  intervention on the Kevin Hall surface is a no-op upstream (B-25).
+  intervention on the Kevin Hall surface is a no-op upstream (P-05).
 - **The comparison's floor.** The baseline writes six significant digits, so no comparison is
   tighter than about 10⁻⁵ relative.
 - **The harness has been wrong six times**, and this run did not add a seventh — but it did find

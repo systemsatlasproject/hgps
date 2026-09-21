@@ -75,7 +75,7 @@ TEST(TestRandom_Source, NextDoubleIsInTheUnitIntervalAndNeverOne) {
     }
 
     // The 53-bit construction cannot reach 1.0, so nothing downstream needs to defend against it
-    // (audit N-5: std::generate_canonical has returned exactly 1.0 on some implementations).
+    // (audit N-05: std::generate_canonical has returned exactly 1.0 on some implementations).
     EXPECT_GT(max_seen, 0.999);
 }
 

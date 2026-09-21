@@ -815,7 +815,7 @@ def _named_series(variable, values_by_seed, year=2020, family=eqrun.MAIN_FAMILY)
 
 
 class BaselineDoesNotComputeTest(unittest.TestCase):
-    """The exclusion for a column the baseline emits and never fills (B-22).
+    """The exclusion for a column the baseline emits and never fills (P-02).
 
     The rule has two halves — "the baseline never fills it" and "we do" — and until this run it
     only checked the first. Found by reviewing the exclusions against ADR 0041.
@@ -832,7 +832,7 @@ class BaselineDoesNotComputeTest(unittest.TestCase):
         outcome = self._run([0.0] * 20, [12.5 + 0.1 * i for i in range(20)])
         self.assertEqual([], outcome.comparisons)
         self.assertIn("std_income", outcome.uncomputed)
-        self.assertEqual("B-22", outcome.uncomputed["std_income"][0])
+        self.assertEqual("P-02", outcome.uncomputed["std_income"][0])
         self.assertEqual([], outcome.missing)
 
     def test_both_sides_identically_zero_is_reported_rather_than_excluded(self):
@@ -871,12 +871,12 @@ class DeviationImpactTest(unittest.TestCase):
         self.assertEqual(2, impact.unchanged)
 
     def test_the_difference_keeps_its_sign_and_finds_its_largest_year(self):
-        # B-24's shape: nothing in the policy's first year, then a difference that grows while the
+        # P-04's shape: nothing in the policy's first year, then a difference that grows while the
         # coverage window is open. The sign says which way the fix moves the number.
         fixed, compatible, seeds = self._reductions(
             {2022: 25.0, 2023: 25.0007, 2024: 25.0045, 2025: 25.0124},
             {2022: 25.0, 2023: 25.0, 2024: 25.0, 2025: 25.0})
-        impact = eqrun.measure_impact(fixed, compatible, seeds, "B-24")
+        impact = eqrun.measure_impact(fixed, compatible, seeds, "P-04")
 
         self.assertEqual(1, len(impact.series))
         series = impact.series[0]

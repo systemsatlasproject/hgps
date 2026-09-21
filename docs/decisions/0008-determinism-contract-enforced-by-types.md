@@ -7,7 +7,7 @@ Accepted, 2026-09-17. **Ruled by the project owner.**
 ## Context
 
 The baseline's reproducibility holds by convention. Its single RNG stream is consumed by modules in
-a fixed order, and every draw site sits in a serial loop *by discipline* — the audit's N-4 records
+a fixed order, and every draw site sits in a serial loop *by discipline* — the audit's N-04 records
 that adding one `context.random()` call inside any existing `tbb::parallel_for_each` would introduce
 both a data race and nondeterminism, and would compile without complaint. The earlier rewrite
 removed most of the parallelism but kept the same conventional guarantee, and missed one site

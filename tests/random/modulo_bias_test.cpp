@@ -63,7 +63,7 @@ TEST(TestRandom_ModuloBias, SmallRangesAreUniformToWithinSamplingNoise) {
 
 TEST(TestRandom_ModuloBias, RejectionNeverReturnsAValueOutsideTheRange) {
     // The baseline's float-multiply scheme could in principle return max + 1 when next_double()
-    // returned exactly 1.0 (audit B-07 with N-5).
+    // returned exactly 1.0 (audit B-07 with N-05).
     hgps::rng::RandomSource random{99U};
 
     for (const std::size_t count : {1U, 2U, 17U, 1'000U}) {

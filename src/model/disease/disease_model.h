@@ -86,7 +86,7 @@ class DiseaseModelBase : public DiseaseModel {
     /// @brief The population's mean relative risk by age and sex.
     ///
     /// A fixed-order reduction, so the result does not depend on the thread count. The baseline
-    /// accumulates into a shared table under a mutex (audit N-7), and these averages divide into
+    /// accumulates into a shared table under a mutex (audit N-07), and these averages divide into
     /// every incidence probability — so a last-bit difference here can flip a person's disease
     /// outcome.
     DoubleAgeGenderTable compute_average_relative_risk(RuntimeContext &context,

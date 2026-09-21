@@ -34,7 +34,7 @@ struct LoadOptions {
     bool require_files_exist{true};
 
     /// @brief Deliberate deviations to put back, in addition to any the document names. The two
-    ///        are unioned: `--baseline-compat B-24` on a config that already asks for it is the
+    ///        are unioned: `--baseline-compat P-04` on a config that already asks for it is the
     ///        same run (ADR 0041).
     api::BaselineCompat baseline_compat;
 };

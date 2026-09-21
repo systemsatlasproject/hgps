@@ -64,7 +64,7 @@ The emptying-band exclusion
 Immigration into an (age, sex) band clones somebody already in it. When the band is empty there is
 nobody to clone, and both implementations skip it and fall short of the demographic projection the
 cohort is otherwise pinned to — silently, and on different seeds, because which bands empty depends
-on the draws. That is a defect in the baseline, recorded as B-21 in docs/deviations.md; this
+on the draws. That is a defect in the baseline, recorded as P-01 in docs/deviations.md; this
 implementation reproduces the rule and so inherits it.
 
 The measured consequence, over three seeds of HLM_France: in the baseline scenario 197 of the
@@ -280,12 +280,12 @@ DEGENERATE_MODAL_SHARE = 0.5
 # otherwise hide behind its own message. See `compare`.
 #
 # These stay exclusions rather than becoming compatibility flags (ADR 0041). The distinction is
-# whether both sides have a number that means something: B-24 is two implementations computing a
+# whether both sides have a number that means something: P-04 is two implementations computing a
 # real value and disagreeing on purpose, which is worth measuring; this is one implementation
 # emitting a placeholder, and "compare zero against zero" is not a stronger test than not
 # comparing. docs/equivalence-method.md records the review.
 BASELINE_DOES_NOT_COMPUTE = {
-    "std_income": ("B-22", "the baseline skips 'income' in the loop that accumulates squared "
+    "std_income": ("P-02", "the baseline skips 'income' in the loop that accumulates squared "
                            "deviations, on the ground that the mapping loop handles it, and the "
                            "mapping loop skips it too; the column is always exactly zero"),
 }
@@ -2018,7 +2018,7 @@ def main() -> int:
                 # The exclusion is taken from the **whole-population** file and applied to every
                 # family, and that is a statement about what it is for rather than a convenience.
                 # A band is excluded because immigration cannot refill it once it empties, so the
-                # two implementations' *cohorts* differ there (B-21). That is a property of the
+                # two implementations' *cohorts* differ there (P-01). That is a property of the
                 # population band. A stratum band being empty is not that: it is a real split of a
                 # band that both sides agree about, and excluding it would drop the stratified
                 # output of every band nobody happens to be in — which on the two HLM examples,

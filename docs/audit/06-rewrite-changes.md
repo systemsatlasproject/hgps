@@ -189,7 +189,7 @@ baseline experiment produced three different files. Two costs come with it:
 | `population.cpp:37` (`std::execution::par`) | retained (`src/hgps/data/population.cpp:22`) |
 
 **Rationale: inferred.** Removing the mutex-guarded floating-point accumulations removes baseline
-nondeterminism source N-7 at those sites. Removing the `build_disease_module` parallelism removes
+nondeterminism source N-07 at those sites. Removing the `build_disease_module` parallelism removes
 the concurrency that triggers the B-02 data race.
 
 **Behaviour:** *alters behaviour intentionally,* with one gap that looks accidental. The two
@@ -212,7 +212,7 @@ baseline's parallelism was mostly not buying anything.
 
 **Baseline.** `find_index_of_all` returns indices in nondeterministic order; correctness depends on
 every caller remembering to `std::sort` the result, which both current callers do
-(N-8). `parallel_for(first, last)` is called as `parallel_for(0, container.size() - 1)`, which on an
+(N-08). `parallel_for(first, last)` is called as `parallel_for(0, container.size() - 1)`, which on an
 empty container underflows to `SIZE_MAX` and is saved only by a second unsigned wraparound in
 `last - first + 1`.
 
@@ -256,7 +256,7 @@ never called anywhere in either codebase — but it is a fair signal of the care
 
 **Baseline.** The single-scenario overload resets `source_ = std::stop_source{}` (`runner.cpp:30`);
 the paired overload does not (`:75`). A `Runner` reused after `cancel()` would abort every
-subsequent paired run immediately (N-9). Unreachable from the Console, which builds one `Runner` per
+subsequent paired run immediately (N-09). Unreachable from the Console, which builds one `Runner` per
 process.
 
 **Rewrite.** Unifying both overloads into `run_simulation_series` puts the reset on one path

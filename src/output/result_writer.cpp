@@ -245,7 +245,7 @@ void ResultWriter::write_json_begin() {
 
     // The seed actually used, and every run's derived seed. This is the provenance record the
     // baseline gets wrong: it writes `seed().value_or(0)`, so an unseeded run claims seed 0 and
-    // re-running with 0 does not reproduce it (audit B-06, N-3).
+    // re-running with 0 does not reproduce it (audit B-06, N-03).
     header["seed"] = metadata_.seed;
     header["run_seeds"] = metadata_.run_seeds;
 

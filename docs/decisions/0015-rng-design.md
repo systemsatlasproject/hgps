@@ -13,7 +13,7 @@ The baseline's `MTRandom32` wraps `std::mt19937`. The audit found five distinct 
   as `0` — a provenance record that is actively wrong (B-06).
 - `next_double()` uses **`std::generate_canonical<double, 53>`**, which consumes two 32-bit draws on
   this platform and has a history of returning exactly `1.0` on some implementations (LWG 2524,
-  audit N-5). The baseline's integer sampler would return `max + 1` on an input of exactly 1.0.
+  audit N-05). The baseline's integer sampler would return `max + 1` on an input of exactly 1.0.
 - `next_int` is **documented half-open and implemented inclusive**:
   `min + (int)((max - min + 1) * next_double())` (B-07). All four call sites compensate by passing
   `size() - 1`.

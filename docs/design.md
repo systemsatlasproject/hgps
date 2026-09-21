@@ -367,7 +367,7 @@ Three things about it are deliberate:
 - **It stops rather than repairs.** A guard that corrects an impossible value has to choose a
   correction, and nothing here knows what the right one is. The baseline substitutes zero for a
   `NaN` in the same loop and says nothing, which turns an impossible value into a quietly wrong
-  mean; that is deviation **B-30** and `--baseline-compat B-30` puts it back.
+  mean; that is deviation **P-10** and `--baseline-compat P-10` puts it back.
 
 A run that raises a located *warning* rather than an error — the energy balance's bound is the
 first — records it in the run manifest's `warnings`, which is present and empty in an ordinary

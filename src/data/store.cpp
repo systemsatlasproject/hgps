@@ -862,7 +862,7 @@ Store::population_impact_fraction(const core::DiseaseInfo &info, const core::Cou
         // 0 is male and 1 is female. The data says so and upstream's loader agrees
         // (`datamanager.cpp:766`); upstream's own *schema* says the opposite, and it is wrong. The
         // decisive case is cervicalcancer, a female-only disease, whose table is non-zero only at
-        // Gender=1 and identically zero at Gender=0 (docs/deviations.md D-40).
+        // Gender=1 and identically zero at Gender=0 (docs/deviations.md P-07).
         if (*gender_code != 0 && *gender_code != 1) {
             report.error(IssueCode::csv_bad_value,
                          IssueLocation{.file = path.string(), .field = "Gender", .line = row + 2},

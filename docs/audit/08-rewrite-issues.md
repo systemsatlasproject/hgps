@@ -137,7 +137,7 @@ So the rewrite's authors appear to have applied a deliberate rule — *remove pa
 reductions, keep parallel integer ones* — and missed one case. The residual-mortality table feeds
 death probabilities for every person every year, so it is not a peripheral quantity.
 
-**Caveat on severity.** The equivalent baseline behaviour (N-7) was measured and produced no
+**Caveat on severity.** The equivalent baseline behaviour (N-07) was measured and produced no
 observable difference at 125,000 people over 25 years, for the arithmetic reasons given in
 `03-baseline-determinism.md` §2.3. The same reasoning applies here, so this is very unlikely to be
 changing anyone's results today. It is rated high because the rewrite's central claim is

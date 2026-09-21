@@ -131,7 +131,7 @@ Finding (4). The code and the data agree; the schema is wrong.
 
 The evidence that settles it is in the real pack, which is 5.4 MB fetched from a release URL and not
 vendored ([ADR 0011](0011-data-fetched-not-vendored.md)), so it is **recorded rather than tested**:
-[docs/deviations.md](../deviations.md) B-27 carries the `cervicalcancer` measurement and the one
+[docs/deviations.md](../deviations.md) P-07 carries the `cervicalcancer` measurement and the one
 command that reproduces it. A test that needed that download would either fail in CI or skip, and
 skipping is what audit finding B-11 is about. What is tested is that the reader implements the encoding
 the data has, against the synthetic pack, whose generator writes different values for the two sexes so

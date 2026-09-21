@@ -56,7 +56,7 @@ struct KevinHallParameters {
     ///        an impossible body.
     std::optional<core::DoubleInterval> weight_range;
 
-    /// @brief B-29 on: integrate the energy balance past a non-positive body fat, as the baseline
+    /// @brief P-09 on: integrate the energy balance past a non-positive body fat, as the baseline
     ///        does. Off — the default — bounds it at the edge of the model's domain
     ///        (ADR 0049, docs/findings/seed-80.md).
     bool unbounded_body_fat{false};

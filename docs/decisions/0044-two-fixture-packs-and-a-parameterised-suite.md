@@ -18,7 +18,7 @@ Every one of those is a fact about that fixture, and the previous run found out 
   produce was hard-coded in three places in the server. **All forty-five server tests passed**,
   because all forty-five used the fixture. It was found by pointing the server at
   `examples/HLM_France`, by hand, after the tests were green.
-- A second, smaller instance in the same run: an end-to-end test of the B-24 compatibility flag
+- A second, smaller instance in the same run: an end-to-end test of the P-04 compatibility flag
   failed because the fixture's policy ran for two years and the defect needs three. There the test
   was wrong rather than the code, which is the better outcome of the two — but it is the same cause.
 
@@ -42,7 +42,7 @@ a second a run. The differences are deliberate, and each one names something a p
 | `output.folder` | `results` | `out/nested/deeper/results` |
 | `output.file_name` | `result.csv` | `synthland_{TIMESTAMP}_B.csv` |
 | scenarios | `Baseline` | `Baseline`, `Intervention` |
-| active intervention | none | `food_labelling`, with B-24 reachable |
+| active intervention | none | `food_labelling`, with P-04 reachable |
 | diseases | all three, in the pack's order | two, reordered |
 | `output.comorbidities` | 2 | 1 |
 | seed, horizon, cohort fraction | 123456789, 2010–2014, 0.005 | 987654321, 2011–2016, 0.004 |

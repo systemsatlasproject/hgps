@@ -39,8 +39,8 @@ Options:
                         the output does not have fails the run. Never use it for analysis.
       --baseline-compat NAME
                         Put a deliberate deviation from the baseline back, so its effect can be
-                        measured. NAME is a deviation's ID in docs/deviations.md — B-24, B-29
-                        and B-30 so far — or 'all'. Repeatable. Off by default, and the run's
+                        measured. NAME is a deviation's ID in docs/deviations.md — P-04, P-09
+                        and P-10 so far — or 'all'. Repeatable. Off by default, and the run's
                         manifest records whatever was on.
   -j, --jobid N         An HPC array job identifier. Appended to the output file name unless the
                         name contains {JOBID}.
